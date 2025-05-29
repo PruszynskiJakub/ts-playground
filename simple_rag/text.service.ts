@@ -13,30 +13,30 @@ export function processMarkdown(markdownText: string): {
   let imageIndex = 0;
   let urlIndex = 0;
   
-  // Process markdown image syntax: ![alt text](image-url)
-  let processedText = markdownText.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, imageUrl) => {
-    images.push(imageUrl);
-    return `![${alt}](IMAGE_${imageIndex++})`;
-  });
-  
-  // Process markdown link syntax: [link text](url)
-  processedText = processedText.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
-    // Skip if it's one of our image placeholders
-    if (url.startsWith('IMAGE_')) {
-      return match;
-    }
-    urls.push(url);
-    return `[${text}](URL_${urlIndex++})`;
-  });
-  
-  // Process plain URLs that aren't in markdown syntax
-  processedText = processedText.replace(
-    /(https?:\/\/[^\s<>"']+)(?![^<>]*>|[^"']*['"]\))/g, 
-    (match, url) => {
+  // Process all patterns in a single pass for better performance
+  const processedText = markdownText
+    // Process markdown image syntax first: ![alt text](image-url)
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, imageUrl) => {
+      images.push(imageUrl);
+      return `![${alt}]({{$img${imageIndex++}}})`;
+    })
+    // Then process markdown link syntax: [link text](url)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+      // Skip if it's one of our image placeholders
+      if (url.includes('{{$img')) {
+        return match;
+      }
       urls.push(url);
-      return `URL_${urlIndex++}`;
-    }
-  );
+      return `[${text}]({{$url${urlIndex++}}})`;
+    })
+    // Finally process plain URLs that aren't in markdown syntax
+    .replace(
+      /(?<![(\[])(https?:\/\/[^\s<>"']+)(?![^<>]*>|[^"']*['"]\))/g, 
+      (match, url) => {
+        urls.push(url);
+        return `{{$url${urlIndex++}}}`;
+      }
+    );
   
   return {
     content: processedText,
