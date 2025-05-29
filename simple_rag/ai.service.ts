@@ -14,6 +14,24 @@ const client = new OpenAI({
  * @param temperature Controls randomness (0-2, defaults to 1)
  * @returns The completion content as a string
  */
+/**
+ * Creates an embedding using the OpenAI API
+ * @param text The text to create an embedding for
+ * @param model The model to use (defaults to text-embedding-3-large)
+ * @returns The embedding as an array of numbers
+ */
+export async function embedding(
+    text: string,
+    model: string = 'text-embedding-3-large'
+): Promise<number[]> {
+    const response = await client.embeddings.create({
+        model,
+        input: text,
+    });
+    
+    return response.data[0].embedding;
+}
+
 export async function completion(
     {
         model = 'gpt-4.1',
