@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import type {ChatCompletionMessageParam} from 'openai/resources/chat/completions';
 import {env} from "bun";
+import type { CreateEmbeddingResponse } from 'openai/resources/embeddings';
 
 const client = new OpenAI({
     apiKey: env.OPENAI_API_KEY
@@ -24,12 +25,16 @@ export async function embedding(
     text: string,
     model: string = 'text-embedding-3-large'
 ): Promise<number[]> {
-    const response = await client.embeddings.create({
-        model,
-        input: text,
-    });
-    
-    return response.data[0].embedding;
+    try {
+        const response: CreateEmbeddingResponse = await client.embeddings.create({
+            model: "text-embedding-3-large",
+            input: text,
+        });
+        return response.data[0].embedding;
+    } catch (error) {
+        console.error("Error creating embedding:", error);
+        throw error;
+    }
 }
 
 export async function completion(
