@@ -27,7 +27,7 @@ async function main() {
         console.log(`Preparing to store ${data.length} items in vector database...`);
         try {
             const mappedData = data.map((text, index) => ({
-                id: `item-${index}`,
+                id: index + 1,
                 text,
                 metadata: {source: "AI concepts dataset"}
             }));
