@@ -1,6 +1,7 @@
 import {env} from 'bun';
 import {QdrantClient} from "@qdrant/js-client-rest";
 import {embedding} from './ai.service';
+import { v4 as uuidv4 } from 'uuid';
 
 const client = new QdrantClient({
     url: env.QDRANT_URL,
@@ -48,7 +49,7 @@ export async function addPoints(
             points.map(async (point, index) => {
                 const vector = await embedding(point.text);
                 return {
-                    id: point.id || crypto.randomUUID(),
+                    id: point.id || uuidv4(),
                     vector,
                     payload: {
                         text: point.text,
