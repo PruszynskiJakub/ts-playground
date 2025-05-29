@@ -1,7 +1,8 @@
-import {encureColllection} from "./vectore.store.ts";
+import { encureColllection, addPoints, searchByText } from "./vector.store";
 
-const COLLECTION_NAME = "simple_rag"
+const COLLECTION_NAME = "simple_rag";
 
+// Sample data about AI concepts
 const data: string[] = [
   "Artificial intelligence (AI) is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans.",
   "Machine learning is a subset of AI that focuses on the development of algorithms that can learn from and make predictions based on data.",
@@ -15,4 +16,37 @@ const data: string[] = [
   "Prompt engineering is the practice of designing effective inputs for large language models to elicit desired outputs or behaviors."
 ];
 
-await encureColllection(COLLECTION_NAME)
+async function main() {
+  try {
+    // Ensure collection exists
+    console.log(`Ensuring collection '${COLLECTION_NAME}' exists...`);
+    await encureColllection(COLLECTION_NAME);
+    
+    // Store data in vector database
+    console.log(`Storing ${data.length} items in vector database...`);
+    await addPoints(COLLECTION_NAME, data.map((text, index) => ({
+      id: `item-${index}`,
+      text,
+      metadata: { source: "AI concepts dataset" }
+    })));
+    console.log("Data stored successfully!");
+    
+    // Search for "Transformer model"
+    console.log("\nSearching for 'Transformer model'...");
+    const searchQuery = "Transformer model";
+    const results = await searchByText(COLLECTION_NAME, searchQuery);
+    
+    // Display results
+    console.log(`\nTop ${results.length} results for "${searchQuery}":`);
+    results.forEach((result, index) => {
+      console.log(`\n${index + 1}. Score: ${result.score.toFixed(4)}`);
+      console.log(`   ${result.text}`);
+    });
+    
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+// Run the main function
+main();
