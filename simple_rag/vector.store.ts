@@ -61,6 +61,7 @@ export async function addPoints(
         
         // Upsert points to the collection
         return await client.upsert(collectionName, {
+            wait: true,
             points: pointsWithEmbeddings
         });
     } catch (error) {
