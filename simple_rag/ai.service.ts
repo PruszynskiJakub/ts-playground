@@ -21,7 +21,7 @@ const client = new OpenAI({
  * @param model The model to use (defaults to text-embedding-3-large)
  * @returns The embedding as an array of numbers
  */
-export async function embedding(
+export async function createEmbedding(
     text: string,
     model: string = 'text-embedding-3-large'
 ): Promise<number[]> {
@@ -37,7 +37,7 @@ export async function embedding(
     }
 }
 
-export async function completion(
+export async function createCompletion(
     {
         model = 'gpt-4.1',
         systemMessage,

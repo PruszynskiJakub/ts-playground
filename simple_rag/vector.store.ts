@@ -1,5 +1,5 @@
 import {env} from 'bun';
-import {QdrantClient} from "@qdrant/qdrant-js";
+import {QdrantClient} from '@qdrant/js-client-rest';
 import {createEmbedding} from './ai.service';
 import {v4 as uuidv4} from 'uuid';
 

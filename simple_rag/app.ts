@@ -27,7 +27,7 @@ async function main() {
         console.log(`Preparing to store ${data.length} items in vector database...`);
         try {
             const mappedData = data.map((text, index) => ({
-                id: uuidv4(),
+                id: `item-${index}`,
                 text,
                 metadata: {source: "AI concepts dataset"}
             }));
@@ -48,7 +48,7 @@ async function main() {
         console.log(`\nTop ${results.length} results for "${searchQuery}":`);
         results.forEach((result, index) => {
             console.log(`\n${index + 1}. Score: ${result.score.toFixed(4)}`);
-            console.log(`   ${result.payload}`);
+            console.log(`   ${result.payload['text']}`);
         });
 
     } catch (error) {
@@ -57,4 +57,4 @@ async function main() {
 }
 
 // Run the main function
-main();
+await main();
