@@ -1,15 +1,16 @@
-# playground
+# To play with
 
-To install dependencies:
+## RAG
+* Decomposition
+* Multi-query
+* Fusion
+* Step-back
 
-```bash
-bun install
-```
+## Brain dump
+* Hybrid search
+* Supabase
+* Realtime api
+* Voice chat
+* 
 
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.1.34. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+# Already played with:
