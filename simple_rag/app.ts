@@ -23,14 +23,16 @@ async function main() {
     await encureColllection(COLLECTION_NAME);
     
     // Store data in vector database
-    console.log(`Storing ${data.length} items in vector database...`);
+    console.log(`Preparing to store ${data.length} items in vector database...`);
     try {
-      await addPoints(COLLECTION_NAME, data.map((text, index) => ({
+      const mappedData = data.map((text, index) => ({
         id: `item-${index}`,
         text,
         metadata: { source: "AI concepts dataset" }
-      })));
-      console.log("Data stored successfully!");
+      }));
+      
+      await addPoints(COLLECTION_NAME, mappedData);
+      console.log("Data storage process completed!");
     } catch (error) {
       console.error("Failed to store data:", error.message);
       // Continue with the search even if storage failed

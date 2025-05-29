@@ -9,11 +9,19 @@ const client = new QdrantClient({
 });
 
 export async function encureColllection(name: string) {
-    const collections = await client.getCollections();
-    if (!collections.collections.some(c => c.name === name)) {
-        await client.createCollection(name, {
-            vectors: {size: 3072, distance: "Cosine"}
-        });
+    try {
+        const collections = await client.getCollections();
+        if (!collections.collections.some(c => c.name === name)) {
+            await client.createCollection(name, {
+                vectors: {size: 3072, distance: "Cosine"}
+            });
+            console.log(`Collection '${name}' created successfully.`);
+        } else {
+            console.log(`Collection '${name}' already exists.`);
+        }
+    } catch (error) {
+        console.error(`Error ensuring collection '${name}':`, error);
+        throw error;
     }
 }
 
@@ -41,10 +49,8 @@ export async function addPoints(
     }>
 ) {
     try {
-        // Ensure the collection exists
-        await encureColllection(collectionName);
-        
         // Create points with embeddings
+        console.log(`Generating embeddings for ${points.length} points...`);
         const pointsWithEmbeddings = await Promise.all(
             points.map(async (point, index) => {
                 const vector = await embedding(point.text);
@@ -59,12 +65,28 @@ export async function addPoints(
             })
         );
         
-        // Upsert points to the collection - without wait parameter which causes errors
-        return await client.upsert(collectionName, {
-            points: pointsWithEmbeddings
-        });
+        // Process points in smaller batches to avoid errors
+        const batchSize = 3;
+        console.log(`Uploading points in batches of ${batchSize}...`);
+        
+        for (let i = 0; i < pointsWithEmbeddings.length; i += batchSize) {
+            const batch = pointsWithEmbeddings.slice(i, i + batchSize);
+            console.log(`Uploading batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(pointsWithEmbeddings.length/batchSize)}...`);
+            
+            try {
+                await client.upsert(collectionName, {
+                    points: batch
+                });
+            } catch (batchError) {
+                console.error(`Error uploading batch ${Math.floor(i/batchSize) + 1}:`, batchError.message);
+                // Continue with next batch instead of failing completely
+            }
+        }
+        
+        console.log("Finished uploading points.");
+        return { status: "success" };
     } catch (error) {
-        console.error("Error adding points:", error);
+        console.error("Error in addPoints:", error.message);
         throw error;
     }
 }
@@ -82,15 +104,21 @@ export async function searchByText(
     limit: number = 3
 ) {
     try {
-        // Generate embedding for the query
+        console.log(`Generating embedding for query: "${query}"...`);
         const queryVector = await embedding(query);
         
-        // Search the collection
+        console.log(`Searching collection "${collectionName}" for similar vectors...`);
         const results = await client.search(collectionName, {
             vector: queryVector,
             limit,
             with_payload: true
         });
+        
+        if (results.length === 0) {
+            console.log("No results found.");
+        } else {
+            console.log(`Found ${results.length} results.`);
+        }
         
         // Format and return results
         return results.map(result => ({
@@ -99,8 +127,9 @@ export async function searchByText(
             score: result.score
         }));
     } catch (error) {
-        console.error("Error searching points:", error);
-        throw error;
+        console.error("Error searching points:", error.message);
+        console.log("Make sure the collection exists and contains points.");
+        return [];
     }
 }
 
