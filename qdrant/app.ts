@@ -1,3 +1,5 @@
-import {getCollections} from "./vectore.store.ts";
+import {encureColllection, printCollections} from "./vectore.store.ts";
 
-await getCollections()
+await printCollections()
+await encureColllection("playground")
+await printCollections()
