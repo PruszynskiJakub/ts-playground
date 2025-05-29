@@ -1,4 +1,4 @@
-import {encureColllection, printCollections} from "./vectore.store.ts";
+import {encureColllection, printCollections} from "./vector.store.ts";
 
 const COLLECTION_NAME = "playground"
 
