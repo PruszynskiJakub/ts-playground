@@ -14,8 +14,10 @@
     "qdrant": "bun run qdrant/app.ts"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@qdrant/js-client-rest": "^1.14.1",
     "env": "^0.0.2",
+    "hono": "^4.7.10",
     "langfuse": "^3.37.3"
   }
 }
