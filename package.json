@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@microsoft/tiktokenizer": "^1.0.10",
     "@qdrant/js-client-rest": "^1.14.1",
     "@types/uuid": "^10.0.0",
     "env": "^0.0.2",
