@@ -10,6 +10,11 @@
   },
   "scripts": {
     "test": "bun run test/app.ts",
-    "simple-rag": "bun run simple_rag/app.ts"
+    "simple-rag": "bun run simple_rag/app.ts",
+    "qdrant": "bun run qdrant/app.ts"
+  },
+  "dependencies": {
+    "langfuse": "^3.37.3",
+    "qdrant": "^1.3.1"
   }
 }
