@@ -19,5 +19,8 @@
 * RAG Step-back
 * Contextual Retrieval (https://www.anthropic.com/engineering/contextual-retrieval)
 * Promptfoo
+* neo4j
+* GraphRAG
+* 
 
 # Already played with:
