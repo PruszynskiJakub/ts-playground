@@ -69,3 +69,38 @@ export async function addPoints(
     }
 }
 
+/**
+ * Search for similar points in a collection
+ * @param collectionName The name of the collection
+ * @param query The search query text
+ * @param limit Maximum number of results to return
+ * @returns Array of search results with text and score
+ */
+export async function searchByText(
+    collectionName: string,
+    query: string,
+    limit: number = 3
+) {
+    try {
+        // Generate embedding for the query
+        const queryVector = await embedding(query);
+        
+        // Search the collection
+        const results = await client.search(collectionName, {
+            vector: queryVector,
+            limit,
+            with_payload: true
+        });
+        
+        // Format and return results
+        return results.map(result => ({
+            id: result.id,
+            text: result.payload?.text as string,
+            score: result.score
+        }));
+    } catch (error) {
+        console.error("Error searching points:", error);
+        throw error;
+    }
+}
+
