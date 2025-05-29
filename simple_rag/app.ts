@@ -1,1 +1,2 @@
-console.log("Hello Rag");
+
+const COLLECTION_NAME = "simple_rag"
