@@ -21,6 +21,6 @@
 * Promptfoo
 * neo4j
 * GraphRAG
-* 
+* Algolia
 
 # Already played with:
