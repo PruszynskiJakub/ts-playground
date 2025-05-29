@@ -10,11 +10,13 @@ export function processMarkdown(markdownText: string): {
 } {
   const images: string[] = [];
   const urls: string[] = [];
+  let imageIndex = 0;
+  let urlIndex = 0;
   
   // Process markdown image syntax: ![alt text](image-url)
   let processedText = markdownText.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, imageUrl) => {
     images.push(imageUrl);
-    return `![${alt}](IMAGE_${images.length - 1})`;
+    return `![${alt}](IMAGE_${imageIndex++})`;
   });
   
   // Process markdown link syntax: [link text](url)
@@ -24,7 +26,7 @@ export function processMarkdown(markdownText: string): {
       return match;
     }
     urls.push(url);
-    return `[${text}](URL_${urls.length - 1})`;
+    return `[${text}](URL_${urlIndex++})`;
   });
   
   // Process plain URLs that aren't in markdown syntax
@@ -32,7 +34,7 @@ export function processMarkdown(markdownText: string): {
     /(https?:\/\/[^\s<>"']+)(?![^<>]*>|[^"']*['"]\))/g, 
     (match, url) => {
       urls.push(url);
-      return `URL_${urls.length - 1}`;
+      return `URL_${urlIndex++}`;
     }
   );
   
