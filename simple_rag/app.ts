@@ -1,4 +1,4 @@
-import {encureColllection, addPoints, performSearch} from "./vector.store";
+import {ensureCollection, addPoints, performSearch} from "./vector.store";
 import {v4 as uuidv4} from "uuid";
 
 const COLLECTION_NAME = "simple_rag";
@@ -21,7 +21,7 @@ async function main() {
     try {
         // Ensure collection exists
         console.log(`Ensuring collection '${COLLECTION_NAME}' exists...`);
-        await encureColllection(COLLECTION_NAME);
+        await ensureCollection(COLLECTION_NAME);
 
         // Store data in vector database
         console.log(`Preparing to store ${data.length} items in vector database...`);

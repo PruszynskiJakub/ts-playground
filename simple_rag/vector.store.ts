@@ -1,5 +1,5 @@
 import {env} from 'bun';
-import {QdrantClient} from "@qdrant/js-client-rest";
+import {QdrantClient} from "@qdrant/qdrant-js";
 import {createEmbedding} from './ai.service';
 import {v4 as uuidv4} from 'uuid';
 
@@ -8,7 +8,7 @@ const client = new QdrantClient({
     apiKey: env.QDRANT_API_KEY
 });
 
-export async function encureColllection(name: string) {
+export async function ensureCollection(name: string) {
     try {
         const collections = await client.getCollections();
         if (!collections.collections.some(c => c.name === name)) {
