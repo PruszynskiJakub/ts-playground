@@ -24,12 +24,17 @@ async function main() {
     
     // Store data in vector database
     console.log(`Storing ${data.length} items in vector database...`);
-    await addPoints(COLLECTION_NAME, data.map((text, index) => ({
-      id: `item-${index}`,
-      text,
-      metadata: { source: "AI concepts dataset" }
-    })));
-    console.log("Data stored successfully!");
+    try {
+      await addPoints(COLLECTION_NAME, data.map((text, index) => ({
+        id: `item-${index}`,
+        text,
+        metadata: { source: "AI concepts dataset" }
+      })));
+      console.log("Data stored successfully!");
+    } catch (error) {
+      console.error("Failed to store data:", error.message);
+      // Continue with the search even if storage failed
+    }
     
     // Search for "Transformer model"
     console.log("\nSearching for 'Transformer model'...");

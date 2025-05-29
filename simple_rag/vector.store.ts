@@ -53,15 +53,14 @@ export async function addPoints(
                     vector,
                     payload: {
                         text: point.text,
-                        ...point.metadata
+                        ...(point.metadata || {})
                     }
                 };
             })
         );
         
-        // Upsert points to the collection
+        // Upsert points to the collection - without wait parameter which causes errors
         return await client.upsert(collectionName, {
-            wait: true,
             points: pointsWithEmbeddings
         });
     } catch (error) {
