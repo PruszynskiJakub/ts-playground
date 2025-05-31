@@ -1,9 +1,5 @@
 # To play with
 
-## RAG
-
-
-## Brain dump
 * Hybrid search
 * Supabase
 * Realtime api
@@ -22,5 +18,4 @@
 * neo4j
 * GraphRAG
 * Algolia
-
-# Already played with:
+* Streaming ✅
