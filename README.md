@@ -20,3 +20,5 @@
 * Algolia
 * Streaming ✅
 * Promptfoo
+* Deep search
+* Deep research
