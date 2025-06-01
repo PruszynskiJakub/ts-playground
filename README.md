@@ -19,3 +19,4 @@
 * GraphRAG
 * Algolia
 * Streaming ✅
+* Promptfoo
