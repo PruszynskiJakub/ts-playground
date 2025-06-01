@@ -1,0 +1,4 @@
+2025-06-01T07:54:22.348Z [ERROR]: Anthropic Messages API call error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"prompt is too long: 201424 tokens > 200000 maximum"}}
+2025-06-01T07:54:53.992Z [ERROR]: Anthropic Messages API call error: 413 {"error":{"type":"request_too_large","message":"Request exceeds the maximum size"}}
+2025-06-01T07:59:38.465Z [ERROR]: Anthropic Messages API call error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"prompt is too long: 201424 tokens > 200000 maximum"}}
+2025-06-01T08:00:13.970Z [ERROR]: Anthropic Messages API call error: 413 {"error":{"type":"request_too_large","message":"Request exceeds the maximum size"}}
