@@ -13,7 +13,8 @@
     "simple-rag": "bun run simple_rag/app.ts",
     "qdrant": "bun run qdrant/app.ts",
     "realtime": "bun run realtime/app.ts",
-    "streaming": "bun run streaming/app.ts"
+    "streaming": "bun run streaming/app.ts",
+    "splitter": "bun run splitter/app.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
