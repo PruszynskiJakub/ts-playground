@@ -1,6 +1,13 @@
 import {ElevenLabsClient, play} from '@elevenlabs/elevenlabs-js';
 import 'dotenv/config';
 
+// Debug: Check if API key is loaded
+console.log('ELEVENLABS_API_KEY loaded:', process.env.ELEVENLABS_API_KEY ? 'Yes' : 'No');
+
+if (!process.env.ELEVENLABS_API_KEY) {
+    throw new Error('ELEVENLABS_API_KEY environment variable is not set. Please add it to your .env file.');
+}
+
 const elevenlabs = new ElevenLabsClient({
     apiKey: process.env.ELEVENLABS_API_KEY,
 });
