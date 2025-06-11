@@ -24,12 +24,29 @@ app.use(logger)
 
 app.post('/transcribe', async (c: Context) => {
     try {
-        const body = await c.req.parseBody();
-        const audioFile = body['audio'] as File;
+        const contentType = c.req.header('content-type');
+        let audioFile: File;
+
+        if (contentType?.startsWith('audio/') || contentType?.startsWith('video/')) {
+            // Handle raw audio/video data
+            const arrayBuffer = await c.req.arrayBuffer();
+            const extension = contentType.includes('mp4') ? 'mp4' : 
+                             contentType.includes('wav') ? 'wav' :
+                             contentType.includes('mp3') ? 'mp3' :
+                             contentType.includes('m4a') ? 'm4a' : 'audio';
+            
+            audioFile = new File([arrayBuffer], `audio.${extension}`, { type: contentType });
+        } else {
+            // Handle multipart form data
+            const body = await c.req.parseBody();
+            audioFile = body['audio'] as File || body['file'] as File;
+        }
 
         if (!audioFile) {
             return c.json({ error: 'No audio file provided' }, 400);
         }
+
+        console.log('Processing audio file:', audioFile.name, audioFile.type, audioFile.size);
 
         // Convert File to format expected by OpenAI
         const transcription = await client.audio.transcriptions.create({
