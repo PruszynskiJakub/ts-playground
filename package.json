@@ -15,7 +15,7 @@
     "realtime": "bun run realtime/app.ts",
     "streaming": "bun run streaming/app.ts",
     "splitter": "bun run splitter/app.ts",
-    "voicechat": "bun run voice_chat/app.ts"
+    "voicechat": "bun run speech_to_speech_open_ai/app.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
