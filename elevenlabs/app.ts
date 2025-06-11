@@ -1,5 +1,9 @@
 import {ElevenLabsClient, play} from '@elevenlabs/elevenlabs-js';
-import 'dotenv/config';
+import { config } from 'dotenv';
+import path from 'path';
+
+// Load .env file from the root directory (parent of elevenlabs)
+config({ path: path.join(__dirname, '..', '.env') });
 
 // Debug: Check if API key is loaded
 console.log('ELEVENLABS_API_KEY loaded:', process.env.ELEVENLABS_API_KEY ? 'Yes' : 'No');
