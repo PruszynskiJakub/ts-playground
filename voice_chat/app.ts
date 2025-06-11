@@ -1,4 +1,4 @@
-import {OpenAI} from "openai";
+import {OpenAI, toFile} from "openai";
 import {env, serve} from "bun";
 import {type Context, Hono, type MiddlewareHandler} from 'hono'
 import type {ResponseStreamEvent} from "openai/resources/responses/responses";
@@ -25,32 +25,12 @@ app.use(logger)
 app.post('/transcribe', async (c: Context) => {
     try {
         const contentType = c.req.header('content-type');
-        let audioFile: File;
 
-        if (contentType?.startsWith('audio/') || contentType?.startsWith('video/')) {
-            // Handle raw audio/video data
-            const arrayBuffer = await c.req.arrayBuffer();
-            const extension = contentType.includes('mp4') ? 'mp4' : 
-                             contentType.includes('wav') ? 'wav' :
-                             contentType.includes('mp3') ? 'mp3' :
-                             contentType.includes('m4a') ? 'm4a' : 'audio';
-            
-            audioFile = new File([arrayBuffer], `audio.${extension}`, { type: contentType });
-        } else {
-            // Handle multipart form data
-            const body = await c.req.parseBody();
-            audioFile = body['audio'] as File || body['file'] as File;
-        }
-
-        if (!audioFile) {
-            return c.json({ error: 'No audio file provided' }, 400);
-        }
-
-        console.log('Processing audio file:', audioFile.name, audioFile.type, audioFile.size);
+        const arrayBuffer = await c.req.arrayBuffer();
 
         // Convert File to format expected by OpenAI
         const transcription = await client.audio.transcriptions.create({
-            file: audioFile,
+            file: toFile(arrayBuffer, "audio.m4a"),
             model: 'whisper-1',
         });
 
