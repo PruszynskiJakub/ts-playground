@@ -22,6 +22,32 @@ const app = new Hono()
 
 app.use(logger)
 
+app.post('/transcribe', async (c: Context) => {
+    try {
+        const body = await c.req.parseBody();
+        const audioFile = body['audio'] as File;
+        
+        if (!audioFile) {
+            return c.json({ error: 'No audio file provided' }, 400);
+        }
+
+        // Convert File to format expected by OpenAI
+        const transcription = await client.audio.transcriptions.create({
+            file: audioFile,
+            model: 'whisper-1',
+        });
+
+        return c.json({ 
+            transcription: transcription.text 
+        });
+    } catch (error) {
+        console.error('Transcription error:', error);
+        return c.json({ 
+            error: 'Failed to transcribe audio' 
+        }, 500);
+    }
+});
+
 
 serve({
     fetch: app.fetch,
