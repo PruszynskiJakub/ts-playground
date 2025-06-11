@@ -4,6 +4,8 @@ import {type Context, Hono, type MiddlewareHandler} from 'hono'
 import type {ResponseStreamEvent} from "openai/resources/responses/responses";
 import {streamSSE} from 'hono/streaming'
 import {sleep} from "openai/core";
+import fs from "fs";
+import path from "path";
 
 const client = new OpenAI({
     apiKey: env.OPENAI_API_KEY,
@@ -35,8 +37,21 @@ app.post('/transcribe', async (c: Context) => {
             model: 'whisper-1',
         });
 
+        // Generate speech from transcription
+        const speechFile = path.resolve("./speech.mp3");
+        const mp3 = await client.audio.speech.create({
+            model: "gpt-4o-mini-tts",
+            voice: "coral",
+            input: transcription.text,
+            instructions: "Speak in a cheerful and positive tone.",
+        });
+
+        const buffer = Buffer.from(await mp3.arrayBuffer());
+        await fs.promises.writeFile(speechFile, buffer);
+
         return c.json({ 
-            transcription: transcription.text 
+            transcription: transcription.text,
+            speechFile: speechFile
         });
     } catch (error) {
         console.error('Transcription error:', error);
