@@ -1,8 +1,6 @@
 import { ElevenLabsClient, play } from '@elevenlabs/elevenlabs-js';
 import 'dotenv/config';
 
-load_dotenv()
-
 const elevenlabs = new ElevenLabsClient();
 const audio = await elevenlabs.textToSpeech.convert('JBFqnCBsd6RMkjVDRZzb', {
     text: 'The first move is what sets everything in motion.',
