@@ -29,8 +29,9 @@ app.post('/transcribe', async (c: Context) => {
         const arrayBuffer = await c.req.arrayBuffer();
 
         // Convert File to format expected by OpenAI
+        const audioFile = await toFile(arrayBuffer, "audio.m4a");
         const transcription = await client.audio.transcriptions.create({
-            file: toFile(arrayBuffer, "audio.m4a"),
+            file: audioFile,
             model: 'whisper-1',
         });
 
