@@ -24,18 +24,16 @@ app.use(logger)
 
 app.post('/transcribe', async (c: Context) => {
     try {
-        const body = await c.req.arrayBuffer();
-        console.log(body);
+        const body = await c.req.parseBody();
+        const audioFile = body['audio'] as File;
 
-        if (!body) {
+        if (!audioFile) {
             return c.json({ error: 'No audio file provided' }, 400);
         }
 
-        toFi
-
         // Convert File to format expected by OpenAI
         const transcription = await client.audio.transcriptions.create({
-            file: body,
+            file: audioFile,
             model: 'whisper-1',
         });
 
