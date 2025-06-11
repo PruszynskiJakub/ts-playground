@@ -14,7 +14,8 @@
     "qdrant": "bun run qdrant/app.ts",
     "realtime": "bun run realtime/app.ts",
     "streaming": "bun run streaming/app.ts",
-    "splitter": "bun run splitter/app.ts"
+    "splitter": "bun run splitter/app.ts",
+    "voicechat": "bun run voice_chat/app.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
