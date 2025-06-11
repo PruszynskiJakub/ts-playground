@@ -38,7 +38,6 @@ app.post('/transcribe', async (c: Context) => {
         });
 
         // Generate speech from transcription
-        const speechFile = path.resolve("./speech.mp3");
         const mp3 = await client.audio.speech.create({
             model: "gpt-4o-mini-tts",
             voice: "coral",
@@ -47,12 +46,11 @@ app.post('/transcribe', async (c: Context) => {
         });
 
         const buffer = Buffer.from(await mp3.arrayBuffer());
-        await fs.promises.writeFile(speechFile, buffer);
 
-        return c.json({ 
-            transcription: transcription.text,
-            speechFile: speechFile
-        });
+        // Return the audio file directly
+        c.header('Content-Type', 'audio/mpeg');
+        c.header('Content-Disposition', 'attachment; filename="speech.mp3"');
+        return c.body(buffer);
     } catch (error) {
         console.error('Transcription error:', error);
         return c.json({ 
