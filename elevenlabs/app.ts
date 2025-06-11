@@ -1,7 +1,9 @@
 import { ElevenLabsClient, play } from '@elevenlabs/elevenlabs-js';
 import 'dotenv/config';
 
-const elevenlabs = new ElevenLabsClient();
+const elevenlabs = new ElevenLabsClient({
+    apiKey: process.env.ELEVENLABS_API_KEY
+});
 const audio = await elevenlabs.textToSpeech.convert('JBFqnCBsd6RMkjVDRZzb', {
     text: 'The first move is what sets everything in motion.',
     modelId: 'eleven_multilingual_v2',
