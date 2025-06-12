@@ -3,7 +3,6 @@ import { createOpenAIService } from "./openai.service";
 import { createDocumentService } from "./document.service";
 import {env} from 'bun';
 import OpenAI from "openai";
-import * as bun from "bun";
 
 // Main function
 (async () => {
