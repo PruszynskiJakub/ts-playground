@@ -1,7 +1,7 @@
 import { createWebService } from "./web.service";
 import { createOpenAIService } from "./openai.service";
 import { createDocumentService } from "./document.service";
-import {env} from 'bun';
+import {env, serve} from "bun";
 import OpenAI from "openai";
 
 // Main function

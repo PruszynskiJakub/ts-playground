@@ -44,36 +44,3 @@ export const createOpenAIService = (client: OpenAI) => {
         generateResponse,
     };
 };
-
-// Usage example
-(async () => {
-    const client = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-    });
-
-    const openAIService = createOpenAIService(client);
-
-    // Use chatCompletion function (non-streaming)
-    const chatResult = await openAIService.chatCompletion([
-        {role: "system", content: "You are a helpful assistant."},
-        {role: "user", content: "Explain functional programming in TypeScript."},
-    ]);
-    console.log("Chat Completion:", chatResult);
-
-    // Use chatCompletion function (streaming)
-    console.log("\n=== Streaming Chat Completion ===");
-    const completion = await openAIService.chatCompletion([
-        {role: "system", content: "You are a helpful assistant."},
-        {role: "user", content: "Tell me a short story about a robot."},
-    ], {stream: false}) as ChatCompletion
-
-    console.log("\n=== Streaming Chat Completion ===");
-    console.log(completion.choices[0].message)
-
-    // Use generateResponse function
-    const response = await openAIService.generateResponse(
-        "You are a coding assistant that talks like a pirate",
-        "Are semicolons optional in JavaScript?"
-    );
-    console.log("Response API:", response);
-})();
