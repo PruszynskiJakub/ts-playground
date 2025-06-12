@@ -5,7 +5,7 @@ import type {
 } from "openai/resources/chat/completions";
 
 // Factory function that takes an OpenAI client and returns pure functions
-const createOpenAIService = (client: OpenAI) => {
+export const createOpenAIService = (client: OpenAI) => {
 
     // Function to generate a chat completion given messages
     const chatCompletion = async (
