@@ -1,12 +1,14 @@
 import { createWebService } from "./web.service";
 import { createOpenAIService } from "./openai.service";
 import { createDocumentService } from "./document.service";
+import {env} from 'bun';
 import OpenAI from "openai";
+import * as bun from "bun";
 
 // Main function
 (async () => {
     // Get URL from command line arguments
-    const url = process.argv[2];
+    const url = "https://paulgraham.com/superlinear.html"
     
     if (!url) {
         console.error("Please provide a URL as an argument");
@@ -14,8 +16,8 @@ import OpenAI from "openai";
         process.exit(1);
     }
 
-    const serperApiKey = process.env.SERPER_API_KEY;
-    const openaiApiKey = process.env.OPENAI_API_KEY;
+    const serperApiKey = env.SERPER_API_KEY;
+    const openaiApiKey = env.OPENAI_API_KEY;
     
     if (!serperApiKey) {
         console.error("SERPER_API_KEY environment variable is required");
