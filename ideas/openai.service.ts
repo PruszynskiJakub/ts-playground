@@ -5,12 +5,24 @@ import type {ChatCompletionMessageParam} from "openai/resources/chat/completions
 const createOpenAIService = (client: OpenAI) => {
 
     // Function to generate a chat completion given messages
-    const chatCompletion = async (messages: ChatCompletionMessageParam[]) => {
-        const completion = await client.chat.completions.create({
-            model: "gpt-4o",
-            messages,
-        });
-        return completion.choices[0].message.content;
+    const chatCompletion = async (
+        messages: ChatCompletionMessageParam[], 
+        options?: { stream?: boolean }
+    ) => {
+        if (options?.stream) {
+            const stream = await client.chat.completions.create({
+                model: "gpt-4o",
+                messages,
+                stream: true,
+            });
+            return stream;
+        } else {
+            const completion = await client.chat.completions.create({
+                model: "gpt-4o",
+                messages,
+            });
+            return completion.choices[0].message.content;
+        }
     };
 
     // Function to generate a text response with instructions and input
@@ -37,12 +49,29 @@ const createOpenAIService = (client: OpenAI) => {
 
     const openAIService = createOpenAIService(client);
 
-    // Use chatCompletion function
+    // Use chatCompletion function (non-streaming)
     const chatResult = await openAIService.chatCompletion([
         {role: "system", content: "You are a helpful assistant."},
         {role: "user", content: "Explain functional programming in TypeScript."},
     ]);
     console.log("Chat Completion:", chatResult);
+
+    // Use chatCompletion function (streaming)
+    console.log("\n=== Streaming Chat Completion ===");
+    const streamResult = await openAIService.chatCompletion([
+        {role: "system", content: "You are a helpful assistant."},
+        {role: "user", content: "Tell me a short story about a robot."},
+    ], { stream: true });
+    
+    if (typeof streamResult === 'object' && 'controller' in streamResult) {
+        for await (const chunk of streamResult) {
+            const content = chunk.choices[0]?.delta?.content || '';
+            if (content) {
+                process.stdout.write(content);
+            }
+        }
+        console.log("\n"); // New line after streaming
+    }
 
     // Use generateResponse function
     const response = await openAIService.generateResponse(
