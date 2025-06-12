@@ -1,53 +1,7 @@
 import { createWebService } from "./web.service";
 import { createOpenAIService } from "./openai.service";
+import { createDocumentService } from "./document.service";
 import OpenAI from "openai";
-
-// Function to extract and replace content with placeholders
-const processContent = (content: string) => {
-    const images: string[] = [];
-    const urls: string[] = [];
-    let processedText = content;
-
-    // Extract and replace image URLs (img src, background-image, etc.)
-    const imageRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>|background-image:\s*url\(["']?([^"')]+)["']?\)/gi;
-    let imageMatch;
-    let imageIndex = 0;
-    while ((imageMatch = imageRegex.exec(content)) !== null) {
-        const imageUrl = imageMatch[1] || imageMatch[2];
-        if (imageUrl) {
-            images.push(imageUrl);
-            processedText = processedText.replace(imageMatch[0], `[IMAGE_PLACEHOLDER_${imageIndex}]`);
-            imageIndex++;
-        }
-    }
-
-    // Extract and replace URLs (href links)
-    const urlRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>/gi;
-    let urlMatch;
-    let urlIndex = 0;
-    while ((urlMatch = urlRegex.exec(content)) !== null) {
-        const url = urlMatch[1];
-        if (url && !url.startsWith('#') && !url.startsWith('mailto:')) {
-            urls.push(url);
-            processedText = processedText.replace(urlMatch[0], `[URL_PLACEHOLDER_${urlIndex}]`);
-            urlIndex++;
-        }
-    }
-
-    // Clean up HTML tags to get plain text
-    const textContent = processedText
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-    return {
-        text: textContent,
-        images,
-        urls
-    };
-};
 
 // Main function
 (async () => {
@@ -76,6 +30,7 @@ const processContent = (content: string) => {
     const webService = createWebService(serperApiKey);
     const openaiClient = new OpenAI({ apiKey: openaiApiKey });
     const openaiService = createOpenAIService(openaiClient);
+    const documentService = createDocumentService();
 
     try {
         console.log(`Scraping webpage: ${url}`);
@@ -87,7 +42,7 @@ const processContent = (content: string) => {
         }
 
         console.log("Processing content...");
-        const processedContent = processContent(scrapeResults.text);
+        const processedContent = documentService.processContent(scrapeResults.text);
         
         console.log(`Extracted ${processedContent.images.length} images and ${processedContent.urls.length} URLs`);
         
