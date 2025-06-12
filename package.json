@@ -29,6 +29,7 @@
     "dotenv": "^16.5.0",
     "env": "^0.0.2",
     "hono": "^4.7.10",
+    "langchain": "^0.3.28",
     "langfuse": "^3.37.3",
     "llamaindex": "^0.11.5",
     "openai": "^4.103.0",
