@@ -1,5 +1,8 @@
+import { config } from "dotenv";
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+
+config();
 
 const model = new ChatOpenAI({ model: "gpt-4o" });
 const messages = [
