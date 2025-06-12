@@ -17,6 +17,7 @@
     "splitter": "bun run splitter/app.ts",
     "voicechat": "bun run speech_to_speech_open_ai/app.ts",
     "agents": "bun run agents_openai/app.ts"
+    "ideas": "bun run ideas/app.ts"
   },
   "dependencies": {
     "@elevenlabs/elevenlabs-js": "^2.2.0",
