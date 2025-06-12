@@ -1,13 +1,11 @@
 import OpenAI from "openai";
+import type {ChatCompletionMessageParam} from "openai/resources/chat/completions";
 
 // Factory function that takes an OpenAI client and returns pure functions
 const createOpenAIService = (client: OpenAI) => {
 
     // Function to generate a chat completion given messages
-    const chatCompletion = async (messages: Array<{
-        role: "system" | "user" | "assistant" | "tool";
-        content: string;
-    }>) => {
+    const chatCompletion = async (messages: ChatCompletionMessageParam[]) => {
         const completion = await client.chat.completions.create({
             model: "gpt-4o",
             messages,
@@ -41,8 +39,8 @@ const createOpenAIService = (client: OpenAI) => {
 
     // Use chatCompletion function
     const chatResult = await openAIService.chatCompletion([
-        { role: "system", content: "You are a helpful assistant." },
-        { role: "user", content: "Explain functional programming in TypeScript." },
+        {role: "system", content: "You are a helpful assistant."},
+        {role: "user", content: "Explain functional programming in TypeScript."},
     ]);
     console.log("Chat Completion:", chatResult);
 
