@@ -6,22 +6,21 @@ const createOpenAIService = (client: OpenAI) => {
 
     // Function to generate a chat completion given messages
     const chatCompletion = async (
-        messages: ChatCompletionMessageParam[], 
+        messages: ChatCompletionMessageParam[],
         options?: { stream?: boolean }
-    ) => {
-        if (options?.stream) {
-            const stream = await client.chat.completions.create({
+    ): Promise<OpenAI.Chat.Completions.ChatCompletion | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> => {
+        try {
+            const chatCompletion = await client.chat.completions.create({
                 model: "gpt-4o",
-                messages,
-                stream: true,
+                messages
             });
-            return stream;
-        } else {
-            const completion = await client.chat.completions.create({
-                model: "gpt-4o",
-                messages,
-            });
-            return completion.choices[0].message.content;
+
+            return options?.stream
+                ? chatCompletion as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>
+                : chatCompletion as OpenAI.Chat.Completions.ChatCompletion;
+        } catch (error) {
+            console.error("Error in OpenAI completion:", error);
+            throw error;
         }
     };
 
@@ -61,8 +60,8 @@ const createOpenAIService = (client: OpenAI) => {
     const streamResult = await openAIService.chatCompletion([
         {role: "system", content: "You are a helpful assistant."},
         {role: "user", content: "Tell me a short story about a robot."},
-    ], { stream: true });
-    
+    ], {stream: true});
+
     if (typeof streamResult === 'object' && 'controller' in streamResult) {
         for await (const chunk of streamResult) {
             const content = chunk.choices[0]?.delta?.content || '';
