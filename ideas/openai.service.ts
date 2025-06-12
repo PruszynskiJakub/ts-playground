@@ -4,7 +4,10 @@ import OpenAI from "openai";
 const createOpenAIService = (client: OpenAI) => {
 
     // Function to generate a chat completion given messages
-    const chatCompletion = async (messages: { role: string; content: string }[]) => {
+    const chatCompletion = async (messages: Array<{
+        role: "system" | "user" | "assistant" | "tool";
+        content: string;
+    }>) => {
         const completion = await client.chat.completions.create({
             model: "gpt-4o",
             messages,
