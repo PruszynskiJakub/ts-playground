@@ -1,5 +1,8 @@
 import OpenAI from "openai";
-import type {ChatCompletionMessageParam} from "openai/resources/chat/completions";
+import type {
+    ChatCompletion,
+    ChatCompletionMessageParam,
+} from "openai/resources/chat/completions";
 
 // Factory function that takes an OpenAI client and returns pure functions
 const createOpenAIService = (client: OpenAI) => {
@@ -12,7 +15,8 @@ const createOpenAIService = (client: OpenAI) => {
         try {
             const chatCompletion = await client.chat.completions.create({
                 model: "gpt-4o",
-                messages
+                messages,
+                stream: options?.stream ?? false,
             });
 
             return options?.stream
@@ -57,20 +61,13 @@ const createOpenAIService = (client: OpenAI) => {
 
     // Use chatCompletion function (streaming)
     console.log("\n=== Streaming Chat Completion ===");
-    const streamResult = await openAIService.chatCompletion([
+    const completion = await openAIService.chatCompletion([
         {role: "system", content: "You are a helpful assistant."},
         {role: "user", content: "Tell me a short story about a robot."},
-    ], {stream: true});
+    ], {stream: false}) as ChatCompletion
 
-    if (typeof streamResult === 'object' && 'controller' in streamResult) {
-        for await (const chunk of streamResult) {
-            const content = chunk.choices[0]?.delta?.content || '';
-            if (content) {
-                process.stdout.write(content);
-            }
-        }
-        console.log("\n"); // New line after streaming
-    }
+    console.log("\n=== Streaming Chat Completion ===");
+    console.log(completion.choices[0].message)
 
     // Use generateResponse function
     const response = await openAIService.generateResponse(
