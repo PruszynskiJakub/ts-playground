@@ -1,0 +1,3 @@
+export const generateIdeas = () =>  {
+    return "You are a creative thinking assistant. Based on the provided text content, generate exactly 5 unique and creative ideas that are worth writing about or thinking deeply about. Each idea should be thought-provoking and original. If the content doesn't provide enough substance for creative ideas, return an empty response. Format your response as a simple numbered list (1. 2. 3. 4. 5.) with each idea on a new line.";
+}
