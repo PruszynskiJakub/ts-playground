@@ -10,11 +10,11 @@ export const createOpenAIService = (client: OpenAI) => {
     // Function to generate a chat completion given messages
     const chatCompletion = async (
         messages: ChatCompletionMessageParam[],
-        options?: { stream?: boolean; temperature?: number }
+        options?: { stream?: boolean; temperature?: number, model?: string }
     ): Promise<OpenAI.Chat.Completions.ChatCompletion | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> => {
         try {
             const chatCompletion = await client.chat.completions.create({
-                model: "gpt-4o",
+                model: options?.model ?? "gpt-4o",
                 messages,
                 stream: options?.stream ?? false,
                 temperature: options?.temperature ?? 1.3,
