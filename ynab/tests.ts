@@ -117,4 +117,6 @@ export const runTest = async () => {
 };
 
 // Run the test if this file is executed directly
+if (import.meta.main) {
   runTest().catch(console.error);
+}
