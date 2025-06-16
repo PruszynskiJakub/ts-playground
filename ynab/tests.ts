@@ -67,6 +67,12 @@ const displayResultsAsTable = (results: any[]) => {
   console.log('\n📊 Test Results Summary:');
   console.log('═'.repeat(80));
   
+  if (!results || results.length === 0) {
+    console.log('⚠️  No test results found. This might indicate an issue with the evaluation.');
+    console.log('═'.repeat(80));
+    return;
+  }
+  
   let passed = 0;
   let failed = 0;
   
@@ -111,6 +117,7 @@ export const runTest = async () => {
   );
 
   console.log("Evaluation Results:");
+  console.log("Raw results object:", JSON.stringify(results, null, 2));
   displayResultsAsTable(results.results || []);
   
   return results;
