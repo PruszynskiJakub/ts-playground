@@ -102,7 +102,7 @@ export const runTest = async () => {
   const results = await promptfoo.evaluate(
     {
       prompts: [prompt],
-      providers: ["openai:gpt-4.1-mini"],
+      providers: ["openai:gpt-4o-mini"],
       tests: dataset.map(
         ({ query, assert }) => ({
           vars: { body: query },
