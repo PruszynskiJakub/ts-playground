@@ -144,6 +144,7 @@ export const runTest = async () => {
   );
 
   console.log("Evaluation completed!");
+  console.log(JSON.stringify(results, null, 2));
   displayResultsAsTable(results);
   
   return results;
