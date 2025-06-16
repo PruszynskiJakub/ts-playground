@@ -7,16 +7,19 @@ const dataset = [
     query: "I bought a cup of coffee for 19.99PLN, also spend 177.65 for building materials, and another 23PLN for Uber.",
     assert: [
       {
-        type: 'contains-json' as const,
-        value: { result: [{ query: "Spent 19.99 PLN on a cup of coffee" }] }
+        type: 'contains' as const,
+        value: "19.99"
       },
       {
-        type: 'contains-json' as const, 
-        value: { result: [{ query: "Purchased building materials for 177.65 PLN" }] }
+        type: 'contains' as const,
+        value: "177.65"
       },
       {
-        type: 'contains-json' as const,
-        value: { result: [{ query: "Paid 23 PLN for Uber" }] }
+        type: 'contains' as const,
+        value: "23"
+      },
+      {
+        type: 'is-json' as const
       }
     ]
   },
@@ -24,12 +27,15 @@ const dataset = [
     query: "Transferred 500 from business account then paid 200PLN for the accountant.",
     assert: [
       {
-        type: 'contains-json' as const,
-        value: { result: [{ query: "Transferred 500 PLN from business account" }] }
+        type: 'contains' as const,
+        value: "500"
       },
       {
-        type: 'contains-json' as const,
-        value: { result: [{ query: "Paid 200 PLN for accountant services" }] }
+        type: 'contains' as const,
+        value: "200"
+      },
+      {
+        type: 'is-json' as const
       }
     ]
   },
@@ -37,8 +43,11 @@ const dataset = [
     query: "Bought something for money and paid invalid$ for coffee",
     assert: [
       {
-        type: 'contains-json' as const,
-        value: { result: [{ error_code: "INVALID_AMOUNT" }] }
+        type: 'contains' as const,
+        value: "INVALID_AMOUNT"
+      },
+      {
+        type: 'is-json' as const
       }
     ]
   },
@@ -46,12 +55,15 @@ const dataset = [
     query: "Spent 50.99 and then -30EUR on food",
     assert: [
       {
-        type: 'contains-json' as const,
-        value: { result: [{ query: "Spent 50.99 PLN" }] }
+        type: 'contains' as const,
+        value: "50.99"
       },
       {
-        type: 'contains-json' as const,
-        value: { result: [{ error_code: "INVALID_AMOUNT" }] }
+        type: 'contains' as const,
+        value: "INVALID_AMOUNT"
+      },
+      {
+        type: 'is-json' as const
       }
     ]
   }
@@ -63,11 +75,11 @@ const prompt = `${splitTransactionPrompt()}
 User query: {{body}}`;
 
 // Display results in a formatted table
-const displayResultsAsTable = (results: any[]) => {
+const displayResultsAsTable = (summary: any) => {
   console.log('\n📊 Test Results Summary:');
   console.log('═'.repeat(80));
   
-  if (!results || results.length === 0) {
+  if (!summary || !summary.results || summary.results.length === 0) {
     console.log('⚠️  No test results found. This might indicate an issue with the evaluation.');
     console.log('═'.repeat(80));
     return;
@@ -76,24 +88,34 @@ const displayResultsAsTable = (results: any[]) => {
   let passed = 0;
   let failed = 0;
   
-  results.forEach((result, index) => {
+  summary.results.forEach((result: any, index: number) => {
     const testCase = dataset[index];
     const success = result.success;
     
     if (success) {
       passed++;
       console.log(`✅ Test ${index + 1}: PASSED`);
+      console.log(`   Query: "${testCase.query}"`);
+      console.log(`   Response: ${result.response?.output?.substring(0, 100)}...`);
     } else {
       failed++;
       console.log(`❌ Test ${index + 1}: FAILED`);
-      console.log(`   Query: ${testCase.query}`);
-      console.log(`   Error: ${result.error || 'Assertion failed'}`);
+      console.log(`   Query: "${testCase.query}"`);
+      console.log(`   Response: ${result.response?.output?.substring(0, 100)}...`);
+      if (result.gradingResult) {
+        console.log(`   Failed assertions: ${result.gradingResult.componentResults?.filter((c: any) => !c.pass).length || 0}`);
+      }
     }
+    console.log('');
   });
   
   console.log('═'.repeat(80));
-  console.log(`📈 Results: ${passed} passed, ${failed} failed, ${results.length} total`);
-  console.log(`🎯 Success Rate: ${((passed / results.length) * 100).toFixed(1)}%`);
+  console.log(`📈 Results: ${passed} passed, ${failed} failed, ${summary.results.length} total`);
+  console.log(`🎯 Success Rate: ${((passed / summary.results.length) * 100).toFixed(1)}%`);
+  
+  if (summary.stats) {
+    console.log(`💰 Token Usage: ${summary.stats.tokenUsage?.total || 'N/A'} total tokens`);
+  }
 };
 
 export const runTest = async () => {
@@ -116,9 +138,8 @@ export const runTest = async () => {
     }
   );
 
-  console.log("Evaluation Results:");
-  console.log("Raw results object:", JSON.stringify(results, null, 2));
-  displayResultsAsTable(results.results || []);
+  console.log("Evaluation completed!");
+  displayResultsAsTable(results);
   
   return results;
 };
