@@ -124,5 +124,7 @@ export const runTest = async () => {
 };
 
 // Run the test if this file is executed directly
+if (require.main === module) {
   runTest().catch(console.error);
+}
 
