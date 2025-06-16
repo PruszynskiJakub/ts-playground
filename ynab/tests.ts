@@ -79,43 +79,48 @@ const displayResultsAsTable = (summary: any) => {
   console.log('\n📊 Test Results Summary:');
   console.log('═'.repeat(80));
   
-  if (!summary || !summary.results || summary.results.length === 0) {
-    console.log('⚠️  No test results found. This might indicate an issue with the evaluation.');
+  // Check if we have metrics from the prompt results
+  const metrics = summary.prompts?.[0]?.metrics;
+  if (!metrics) {
+    console.log('⚠️  No test metrics found. This might indicate an issue with the evaluation.');
     console.log('═'.repeat(80));
     return;
   }
   
-  let passed = 0;
-  let failed = 0;
+  const passed = metrics.testPassCount || 0;
+  const failed = metrics.testFailCount || 0;
+  const errors = metrics.testErrorCount || 0;
+  const total = passed + failed + errors;
   
-  summary.results.forEach((result: any, index: number) => {
-    const testCase = dataset[index];
-    const success = result.success;
-    
-    if (success) {
-      passed++;
-      console.log(`✅ Test ${index + 1}: PASSED`);
-      console.log(`   Query: "${testCase.query}"`);
-      console.log(`   Response: ${result.response?.output?.substring(0, 100)}...`);
-    } else {
-      failed++;
-      console.log(`❌ Test ${index + 1}: FAILED`);
-      console.log(`   Query: "${testCase.query}"`);
-      console.log(`   Response: ${result.response?.output?.substring(0, 100)}...`);
-      if (result.gradingResult) {
-        console.log(`   Failed assertions: ${result.gradingResult.componentResults?.filter((c: any) => !c.pass).length || 0}`);
-      }
-    }
-    console.log('');
-  });
+  console.log(`📈 Overall Results:`);
+  console.log(`   ✅ Tests Passed: ${passed}`);
+  console.log(`   ❌ Tests Failed: ${failed}`);
+  console.log(`   ⚠️  Tests Errored: ${errors}`);
+  console.log(`   📊 Total Tests: ${total}`);
+  console.log(`   🎯 Success Rate: ${total > 0 ? ((passed / total) * 100).toFixed(1) : 0}%`);
+  console.log('');
+  
+  console.log(`🔍 Assertion Details:`);
+  console.log(`   ✅ Assertions Passed: ${metrics.assertPassCount || 0}`);
+  console.log(`   ❌ Assertions Failed: ${metrics.assertFailCount || 0}`);
+  console.log('');
+  
+  if (metrics.tokenUsage) {
+    console.log(`💰 Token Usage:`);
+    console.log(`   📝 Total Tokens: ${metrics.tokenUsage.total || 'N/A'}`);
+    console.log(`   🔄 Cached Tokens: ${metrics.tokenUsage.cached || 'N/A'}`);
+    console.log(`   📞 API Requests: ${metrics.tokenUsage.numRequests || 'N/A'}`);
+    console.log(`   💵 Estimated Cost: $${metrics.cost?.toFixed(4) || 'N/A'}`);
+  }
   
   console.log('═'.repeat(80));
-  console.log(`📈 Results: ${passed} passed, ${failed} failed, ${summary.results.length} total`);
-  console.log(`🎯 Success Rate: ${((passed / summary.results.length) * 100).toFixed(1)}%`);
   
-  if (summary.stats) {
-    console.log(`💰 Token Usage: ${summary.stats.tokenUsage?.total || 'N/A'} total tokens`);
-  }
+  // Show individual test case info
+  console.log('📋 Test Cases:');
+  dataset.forEach((testCase, index) => {
+    console.log(`   ${index + 1}. "${testCase.query.substring(0, 60)}${testCase.query.length > 60 ? '...' : ''}"`);
+    console.log(`      Assertions: ${testCase.assert.length}`);
+  });
 };
 
 export const runTest = async () => {
@@ -139,7 +144,6 @@ export const runTest = async () => {
   );
 
   console.log("Evaluation completed!");
-  console.log("Debug - Results structure:", JSON.stringify(results, null, 2));
   displayResultsAsTable(results);
   
   return results;
