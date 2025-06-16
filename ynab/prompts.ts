@@ -159,11 +159,183 @@ When analyzing transaction descriptions, follow these steps:
 }
 
 export const pickAmountPrompt = () => {
-    return "";
+    return `# Transaction Type, Amount, and Currency Classifier
+
+<prompt_objective>
+Analyse transaction descriptions to determine transaction type, amount, and currency, returning the appropriate JSON response with correctly signed amounts and currency or error details.
+</prompt_objective>
+
+<prompt_rules>
+1. CLASSIFICATION RULES:
+- Inflow indicators: "got paid", "received", "refund", "salary"
+- Outflow indicators: "spent", "paid for", "bought", "for", "subscription", "had"
+- When detecting outflow, ALWAYS make the amount negative
+- When detecting inflow, ALWAYS keep the amount positive
+
+2. CURRENCY RULES:
+- DEFAULT currency is PLN if none specified
+- Recognize explicit currency mentions (PLN, USD, EUR, etc.)
+- Currency can appear before or after amount (e.g., "PLN 100" or "100 PLN")
+- Currency should be stored in UPPERCASE format
+
+3. ERROR HANDLING:
+- If amount is missing, return MISSING_AMOUNT error
+- If description is unclear/ambiguous, return AMBIGUOUS_DESCRIPTION error
+- If format is invalid, return INVALID_FORMAT error
+
+4. OUTPUT FORMAT:
+Success case: 
+{
+    "type": "inflow" | "outflow",
+    "amount": number,
+    "currency": string
 }
 
-export const pickCategoryPrompt = () => {
-    return "";
+Error case:
+{
+    "error": {
+        "code": string,
+        "message": string
+    }
+}
+</prompt_rules>
+
+<prompt_examples>
+Input: "I got paid 5500 PLN from the institute"
+Output: {"type": "inflow", "amount": 5500, "currency": "PLN"}
+
+Input: "I had a cup of coffee for 10 EUR"
+Output: {"type": "outflow", "amount": -10, "currency": "EUR"}
+
+Input: "Spent 99 for subscription"
+Output: {"type": "outflow", "amount": -99, "currency": "PLN"}
+
+Input: "USD 50 received from client"
+Output: {"type": "inflow", "amount": 50, "currency": "USD"}
+
+Input: "Money transfer"
+Output: {
+    "error": {
+        "code": "MISSING_AMOUNT",
+        "message": "Amount not specified. Please provide the transaction amount."
+    }
+}
+
+Input: "Something happened with my account"
+Output: {
+    "error": {
+        "code": "AMBIGUOUS_DESCRIPTION",
+        "message": "Description is ambiguous. Please provide more details about the transaction type and amount."
+    }
+}
+
+Input: "Transferred 100 from my second account"
+Output: {"type": "outflow", "amount": -100, "currency": "PLN"}
+
+Input: "Transferred 100 to my second account"
+Output: {"type": "inflow", "amount": 100, "currency": "PLN"}
+</prompt_examples>
+
+<constraints>
+- MUST always return valid JSON
+- MUST include negative sign for outflow amounts
+- MUST return error object when unable to determine type or amount
+- MUST extract numerical amount from text, ignoring currency symbols
+- MUST include currency field in all successful responses
+- MUST use PLN as default currency when none specified
+- MUST store currency codes in UPPERCASE
+</constraints>`;
+}
+
+export const pickCategoryPrompt = (categories: string) => {
+    return `# Transaction Categorization System
+
+<prompt_objective>
+Analyze a transaction description and categorize it into the most appropriate predefined category, providing a clear reasoning for the choice.
+</prompt_objective>
+
+<available_categories>
+${categories}
+</available_categories>
+
+<prompt_rules>
+- ALWAYS analyze both the content and context of the transaction
+- MUST include complete category information (id, name, group_id, and group_name) in a properly formatted JSON
+- MUST provide reasoning in 1-3 clear sentences
+- If no specific category matches, use "Uncategorized" (id: c0b087da-25ec-4ccb-8f08-17ea30daea3a)
+- For income/salary transactions, use "Inflow: Ready to Assign" (id: ca570c65-57d8-488e-96f3-946d836fde23)
+- When multiple categories could apply, choose the most specific one
+</prompt_rules>
+
+<prompt_examples>
+USER: "I had a cup of coffee for 10 PLN"
+AI: {
+    "_reasoning": "Transaction mentions coffee purchase, which best fits into the Coffee shops category under Food & Dining due to the specific beverage and typical coffee shop amount.",
+    "category": {
+        "id": "27fea14e-e7f3-496a-873e-bd913b4f6e3d",
+        "name": "Coffee shops",
+        "category_group_id": "6763ba72-9645-46e5-aa9f-c29be6cb4504",
+        "category_group_name": "Food & Dining"
+    }
+}
+
+USER: "I got paid 5500 PLN from the institute"
+AI: {
+    "_reasoning": "This is a salary/income payment, which should be categorized as ready to assign for proper budget allocation.",
+    "category": {
+        "id": "ca570c65-57d8-488e-96f3-946d836fde23",
+        "name": "Inflow: Ready to Assign",
+        "category_group_id": "c7fcc1f5-fd40-4d39-9959-2105607595ef",
+        "category_group_name": "Internal Master Category"
+    }
+}
+
+USER: "Spent 99 PLN for groceries"
+AI: {
+    "_reasoning": "Transaction explicitly mentions groceries, making it a clear match for the Groceries category under Food & Dining.",
+    "category": {
+        "id": "62beca08-69fc-481e-80a8-4ff54fd74762",
+        "name": "Groceries",
+        "category_group_id": "6763ba72-9645-46e5-aa9f-c29be6cb4504",
+        "category_group_name": "Food & Dining"
+    }
+}
+
+USER: "Monthly Netflix subscription 45 PLN"
+AI: {
+    "_reasoning": "This is a streaming service subscription payment, which falls under Entertainment & Recreation's streaming subscriptions category.",
+    "category": {
+        "id": "1493fb10-c58b-49a8-8648-4bedebbda738",
+        "name": "Streaming subscriptions",
+        "category_group_id": "346bc674-bf33-447f-b956-cba7028ef121",
+        "category_group_name": "Entertainment & Recreation"
+    }
+}
+
+USER: "Random transaction with no clear category"
+AI: {
+    "_reasoning": "Transaction description lacks specific details to determine an appropriate category, defaulting to Uncategorized.",
+    "category": {
+        "id": "c0b087da-25ec-4ccb-8f08-17ea30daea3a",
+        "name": "Uncategorized",
+        "category_group_id": "c7fcc1f5-fd40-4d39-9959-2105607595ef",
+        "category_group_name": "Internal Master Category"
+    }
+}
+
+USER: "Spend 23 PLN on a climbing session"
+AI: {
+    "_reasoning": "This is a fitness activity, which falls under Fitness category.",
+    "category": {
+        "id": "588a3cd5-a50f-44d1-9d71-08cfde240538",
+        "name": "Fitness",
+        "category_group_id": "ee933024-d0f3-4c6a-b209-dbca2db3d9b4",
+        "category_group_name": "Personal Care & Wellness"
+    }
+}
+</prompt_examples>
+
+The AI is ready to analyze and categorize transactions based on their descriptions, providing complete category information and clear reasoning for each categorization.`;
 }
 
 export const splitTransactionPrompt = () => {
