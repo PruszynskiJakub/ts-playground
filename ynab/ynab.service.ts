@@ -248,7 +248,6 @@ Return only a JSON array of strings.`
       
       return {
         account_id: 'f642f5db-efcc-425e-a69e-59242628d143', // Default account
-        payee_name: 'Manual Entry',
         amount: -Math.abs(amount),
         memo: query,
         cleared: ynab.TransactionClearedStatus.Uncleared,
