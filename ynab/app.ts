@@ -14,7 +14,7 @@ if (!YNAB_API_KEY || !BUDGET_ID) {
 }
 
 async function main() {
-  const query = "I bought a cup of coffee for 19.99, Bus tickets for 99.75.";
+  const query = "I transfered 150 from business account.";
   
   if (!query) {
     console.error('Usage: npm run ynab "your transaction query"');
