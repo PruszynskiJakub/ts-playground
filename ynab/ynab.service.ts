@@ -116,6 +116,15 @@ export const createYnabService = (
   };
 
   const parseCategoryInfo = async (query: string): Promise<CategoryInfo> => {
+    const fallbackCategory = {
+      category: {
+        id: 'c0b087da-25ec-4ccb-8f08-17ea30daea3a',
+        name: 'Uncategorized',
+        category_group_id: 'c7fcc1f5-fd40-4d39-9959-2105607595ef',
+        category_group_name: 'Internal Master Category'
+      }
+    };
+
     try {
       const response = await openaiService.chatCompletion([
         {
@@ -132,21 +141,18 @@ export const createYnabService = (
         const content = response.choices[0].message.content || '{}';
         console.log('Category parsing response:', content);
         const parsed = JSON.parse(content);
-        return parsed;
+        
+        // Validate the parsed response has the expected structure
+        if (parsed?.category?.id) {
+          return parsed;
+        }
       }
     } catch (error) {
       console.warn('Failed to parse category info, using uncategorized:', error);
     }
 
-    // Fallback to uncategorized
-    return {
-      category: {
-        id: 'c0b087da-25ec-4ccb-8f08-17ea30daea3a',
-        name: 'Uncategorized',
-        category_group_id: 'c7fcc1f5-fd40-4d39-9959-2105607595ef',
-        category_group_name: 'Internal Master Category'
-      }
-    };
+    // Always return fallback
+    return fallbackCategory;
   };
 
   const parseTransactionQuery = async (query: string): Promise<NewTransaction> => {
@@ -157,6 +163,11 @@ export const createYnabService = (
         parseAmountInfo(query),
         parseCategoryInfo(query)
       ]);
+
+      // Validate that all required data is present
+      if (!accountSelection?.account?.id || !amountInfo?.amount || !categoryInfo?.category?.id) {
+        throw new Error('Failed to parse required transaction data');
+      }
 
       const transaction: NewTransaction = {
         account_id: accountSelection.account.id,
