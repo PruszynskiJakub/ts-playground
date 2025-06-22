@@ -6,8 +6,11 @@ import { accounts, categories } from './config';
 
 interface TransactionResult {
   success: boolean;
-  transactionId?: string;
+  transactionIds?: string[];
+  transactionId?: string; // Keep for backward compatibility
   error?: string;
+  processedCount?: number;
+  totalCount?: number;
 }
 
 interface AccountSelection {
@@ -155,9 +158,44 @@ export const createYnabService = (
     return fallbackCategory;
   };
 
+  const splitTransactionQuery = async (query: string): Promise<string[]> => {
+    try {
+      const response = await openaiService.chatCompletion([
+        {
+          role: 'system',
+          content: `Split the following transaction query into individual transactions. Each transaction should be a separate item in a JSON array. If there's only one transaction, return an array with one item.
+
+Examples:
+- "I bought coffee for 5.50 and lunch for 12.30" → ["I bought coffee for 5.50", "I bought lunch for 12.30"]
+- "Spent 50 on groceries" → ["Spent 50 on groceries"]
+- "Bus tickets for 99.75 and coffee for 19.99" → ["Bus tickets for 99.75", "coffee for 19.99"]
+
+Return only a JSON array of strings.`
+        },
+        {
+          role: 'user',
+          content: query
+        }
+      ], { temperature: 0.1 });
+
+      if ('choices' in response) {
+        const content = response.choices[0].message.content || '[]';
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to split transaction query, treating as single transaction:', error);
+    }
+
+    // Fallback: treat as single transaction
+    return [query];
+  };
+
   const parseTransactionQuery = async (query: string): Promise<NewTransaction> => {
     try {
-      // Run all parsing operations in parallel
+      // Run all parsing operations in parallel for this specific transaction
       const [accountSelection, amountInfo, categoryInfo] = await Promise.all([
         parseAccountSelection(query),
         parseAmountInfo(query),
@@ -209,15 +247,53 @@ export const createYnabService = (
 
   const addTransaction = async (query: string): Promise<TransactionResult> => {
     try {
-      const transactionData = await parseTransactionQuery(query);
+      // Split the query into individual transactions
+      const subQueries = await splitTransactionQuery(query);
+      console.log(`Processing ${subQueries.length} transaction(s):`, subQueries);
 
-      const response = await client.transactions.createTransaction(budgetId, {
-        transaction: transactionData
-      });
+      const transactionIds: string[] = [];
+      const errors: string[] = [];
+
+      // Process each sub-transaction individually
+      for (const subQuery of subQueries) {
+        try {
+          console.log(`Processing: "${subQuery}"`);
+          const transactionData = await parseTransactionQuery(subQuery);
+
+          const response = await client.transactions.createTransaction(budgetId, {
+            transaction: transactionData
+          });
+
+          if (response.data.transaction?.id) {
+            transactionIds.push(response.data.transaction.id);
+            console.log(`✓ Created transaction: ${response.data.transaction.id}`);
+          }
+        } catch (subError) {
+          const errorMsg = `Failed to process "${subQuery}": ${subError instanceof Error ? subError.message : 'Unknown error'}`;
+          console.error(errorMsg);
+          errors.push(errorMsg);
+        }
+      }
+
+      if (transactionIds.length === 0) {
+        return {
+          success: false,
+          error: `Failed to create any transactions. Errors: ${errors.join('; ')}`,
+          processedCount: 0,
+          totalCount: subQueries.length
+        };
+      }
+
+      if (errors.length > 0) {
+        console.warn(`Partial success: ${transactionIds.length}/${subQueries.length} transactions created`);
+      }
 
       return {
         success: true,
-        transactionId: response.data.transaction?.id
+        transactionIds,
+        transactionId: transactionIds[0], // For backward compatibility
+        processedCount: transactionIds.length,
+        totalCount: subQueries.length
       };
     } catch (error) {
       return {
