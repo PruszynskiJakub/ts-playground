@@ -56,10 +56,12 @@ export const createYnabService = (
           role: 'user',
           content: query
         }
-      ], { temperature: 0.1 });
+      ], { temperature: 0.1, jsonMode: true });
 
       if ('choices' in response) {
-        const parsed = JSON.parse(response.choices[0].message.content || '{}');
+        const content = response.choices[0].message.content || '{}';
+        console.log('Account parsing response:', content);
+        const parsed = JSON.parse(content);
         return parsed;
       }
     } catch (error) {
@@ -90,7 +92,9 @@ export const createYnabService = (
       ], { temperature: 0.1 });
 
       if ('choices' in response) {
-        const parsed = JSON.parse(response.choices[0].message.content || '{}');
+        const content = response.choices[0].message.content || '{}';
+        console.log('Amount parsing response:', content);
+        const parsed = JSON.parse(content);
         if (parsed.error) {
           throw new Error(parsed.error.message);
         }
@@ -125,7 +129,9 @@ export const createYnabService = (
       ], { temperature: 0.1 });
 
       if ('choices' in response) {
-        const parsed = JSON.parse(response.choices[0].message.content || '{}');
+        const content = response.choices[0].message.content || '{}';
+        console.log('Category parsing response:', content);
+        const parsed = JSON.parse(content);
         return parsed;
       }
     } catch (error) {
