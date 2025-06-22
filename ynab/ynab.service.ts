@@ -95,13 +95,26 @@ export const createYnabService = (
       ], { temperature: 0.1 });
 
       if ('choices' in response) {
-        const content = response.choices[0].message.content || '{}';
+        let content = response.choices[0].message.content || '{}';
         console.log('Amount parsing response:', content);
-        const parsed = JSON.parse(content);
-        if (parsed.error) {
-          throw new Error(parsed.error.message);
+        
+        // Clean up the response - remove markdown code blocks if present
+        content = content.replace(/```json\s*|\s*```/g, '').trim();
+        
+        try {
+          const parsed = JSON.parse(content);
+          if (parsed.error) {
+            throw new Error(parsed.error.message);
+          }
+          
+          // Validate the parsed response has the expected structure
+          if (parsed?.amount !== undefined && parsed?.type) {
+            return parsed;
+          }
+        } catch (jsonError) {
+          console.warn('JSON parsing failed for amount info:', jsonError);
+          throw jsonError;
         }
-        return parsed;
       }
     } catch (error) {
       console.warn('Failed to parse amount info, using fallback:', error);
