@@ -10,7 +10,7 @@ export const createOpenAIService = (client: OpenAI) => {
     // Function to generate a chat completion given messages
     const chatCompletion = async (
         messages: ChatCompletionMessageParam[],
-        options?: { stream?: boolean; temperature?: number, model?: string }
+        options?: { stream?: boolean; temperature?: number, model?: string, jsonMode?: boolean }
     ): Promise<OpenAI.Chat.Completions.ChatCompletion | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> => {
         try {
             const chatCompletion = await client.chat.completions.create({
@@ -18,6 +18,7 @@ export const createOpenAIService = (client: OpenAI) => {
                 messages,
                 stream: options?.stream ?? false,
                 temperature: options?.temperature ?? 1.3,
+                ...(options?.jsonMode && { response_format: { type: "json_object" } }),
             });
 
             return options?.stream

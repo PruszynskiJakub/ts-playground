@@ -8,7 +8,7 @@ import {generateIdeas} from "./prompts.ts";
 // Main function
 (async () => {
     // Get URL from command line arguments
-    const url = "https://kaicbento.substack.com/p/youre-not-coding-alone-anymore-coding"
+    const url = "https://www.tensorzero.com/blog/reverse-engineering-cursors-llm-client/"
     
     if (!url) {
         console.error("Please provide a URL as an argument");
