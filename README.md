@@ -22,3 +22,4 @@
 * Promptfoo
 * Deep search
 * Deep research
+* Voice to action ✅
