@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+
+description: "LLM Chain Testing"
+
+prompts:
+  - "{{userInput}}"
+
+providers:
+  - exec:npx tsx app.ts
+
+tests:
+  - vars:
+      userInput: "I need help with my password reset"
+    assert:
+      - type: contains
+        value: "password"
+      - type: javascript
+        value: output.length > 50
+
+  - vars:
+      userInput: "My order hasn't arrived yet"
+    assert:
+      - type: icontains
+        value: "order"
+      - type: llm-rubric
+        value: "Response should be helpful and address the shipping concern"
+
+  - vars:
+      userInput: "I want to cancel my subscription"
+    assert:
+      - type: icontains
+        value: "cancel"
+      - type: javascript
+        value: output.length > 30 && output.length < 500
