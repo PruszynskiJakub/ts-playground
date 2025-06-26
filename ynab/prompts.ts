@@ -404,3 +404,64 @@ Output: {
 
 You are a transaction parser. Your task is to parse the provided text into distinct transactions, paraphrase each one clearly, and return a JSON object with a "result" field containing an array of transaction objects. Include error objects for any invalid transactions. Follow all rules strictly and maintain proper formatting in the output.`;
 }
+
+export const classifyMessagePrompt = () => {
+    return `# Message Classification System
+
+<prompt_objective>
+Analyze the user's message and determine if it represents a financial transaction that should be recorded in a budget tracking system.
+</prompt_objective>
+
+<prompt_rules>
+- Respond with ONLY "yes" or "no" in lowercase
+- "yes" = Message describes a financial transaction (spending, receiving, transferring money)
+- "no" = Message is a question, conversation, or non-financial statement
+</prompt_rules>
+
+<transaction_indicators>
+- Spending money: "spent", "bought", "paid for", "purchased", "cost"
+- Receiving money: "got paid", "received", "earned", "salary", "refund"
+- Transfers: "transferred", "moved", "sent", "deposited", "withdrew"
+- Saving/investing: "saved", "invested", "put aside"
+- Loan payments: "paid off", "loan payment", "paid back"
+</transaction_indicators>
+
+<non_transaction_indicators>
+- Questions: "how much", "what is", "can I", "should I"
+- Information requests: "show me", "tell me", "explain"
+- General conversation: greetings, thank you, comments
+- Budget inquiries: "balance", "how much left", "budget status"
+</non_transaction_indicators>
+
+<prompt_examples>
+USER: "I spent 45 PLN on groceries"
+AI: yes
+
+USER: "Just bought coffee for 12.50"
+AI: yes
+
+USER: "Got my salary today - 5500 PLN"
+AI: yes
+
+USER: "How much money do I have left?"
+AI: no
+
+USER: "What's my current balance?"
+AI: no
+
+USER: "Hello, how are you?"
+AI: no
+
+USER: "Transferred 200 to my savings account"
+AI: yes
+
+USER: "Can you help me budget better?"
+AI: no
+
+USER: "Paid 150 for electricity bill"
+AI: yes
+
+USER: "Thanks for the help!"
+AI: no
+</prompt_examples>`;
+}
