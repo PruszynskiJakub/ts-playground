@@ -18,7 +18,7 @@
     "voicechat": "bun run speech_to_speech_open_ai/app.ts",
     "agents": "bun run agents_openai/app.ts",
     "ideas": "bun run ideas/app.ts",
-    "ynab": "bun run ynab/app.ts",
+    "ynab_main": "bun run ynab/main.ts",
     "promptfoo_blackbox": "bun run promptfoo_blackbox/app.ts"
   },
   "dependencies": {

@@ -6,7 +6,7 @@ prompts:
   - "{{userInput}}"
 
 providers:
-  - exec:npx tsx app.ts
+  - exec:npx tsx main.ts
 
 tests:
   - vars:
