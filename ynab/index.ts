@@ -160,7 +160,10 @@ const port = 3000;
 console.log(`🚀 Server starting on port ${port}`);
 console.log(`🔐 Authentication required via X-Authentication header`);
 
-export default {
+// Start the server
+Bun.serve({
   port,
   fetch: app.fetch,
-};
+});
+
+export default app;

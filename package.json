@@ -19,6 +19,7 @@
     "agents": "bun run agents_openai/app.ts",
     "ideas": "bun run ideas/app.ts",
     "ynab_main": "bun run ynab/main.ts",
+    "ynab_index": "bun run ynab/index.ts",
     "promptfoo_blackbox": "bun run promptfoo_blackbox/app.ts"
   },
   "dependencies": {
