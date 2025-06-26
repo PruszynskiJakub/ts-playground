@@ -155,7 +155,7 @@ app.get('/health', (c) => {
   return c.json({ status: 'ok' });
 });
 
-const port = 3000;
+const port = 3001;
 
 console.log(`🚀 Server starting on port ${port}`);
 console.log(`🔐 Authentication required via X-Authentication header`);
