@@ -21,7 +21,8 @@
     "ynab_main": "bun run ynab/main.ts",
     "ynab_index": "bun run ynab/index.ts",
     "promptfoo_blackbox": "bun run promptfoo_blackbox/app.ts",
-    "youtube": "bun run youtube/main.ts"
+    "youtube": "bun run youtube/main.ts",
+    "langchain_with_data": "bun run langchain_with_data/main.ts"
   },
   "dependencies": {
     "@elevenlabs/elevenlabs-js": "^2.2.0",
