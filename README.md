@@ -23,3 +23,5 @@
 * Deep search
 * Deep research
 * Voice to action ✅
+* Youtube transcription
+* Youtube with gemini ✅
