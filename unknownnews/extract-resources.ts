@@ -63,10 +63,6 @@ async function extractResources() {
                 {
                     role: "system",
                     content: prompt
-                },
-                {
-                    role: "user",
-                    content: documents[0].text,
                 }
             ],
             {
@@ -96,6 +92,8 @@ async function extractResources() {
                 sectionId: sectionIds[resource.category]
             }
         }));
+
+        console.log(tasks)
 
         if (tasks.length > 0) {
             console.log('Adding tasks to Todoist...');

@@ -1,7 +1,8 @@
 import { TodoistApi } from '@doist/todoist-api-typescript'
 
-const api = new TodoistApi('YOUR_API_TOKEN')
 
-api.getTask('6X4Vw2Hfmg73Q2XR')
+const api = new TodoistApi(process.env.TODOIST_API_TOKEN as string);
+
+api.getTask('6cH4M8865mV7Vmv4')
     .then((task) => console.log(task))
     .catch((error) => console.log(error))
