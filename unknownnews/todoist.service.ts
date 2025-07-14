@@ -10,17 +10,29 @@ export const createTodoistService = (client: TodoistApi) => {
         options?: { projectId?: string; description?: string; priority?: number; sectionId?: string }
     ): Promise<Task> => {
         try {
-            const task = await client.addTask({
+            // Build task object, only including defined properties
+            const taskData: any = {
                 content,
-                projectId: options?.projectId,
-                description: options?.description,
-                priority: options?.priority ?? 1,
-                sectionId: options?.sectionId,
-            });
+            };
 
+            if (options?.projectId) {
+                taskData.projectId = options.projectId;
+            }
+            if (options?.description) {
+                taskData.description = options.description;
+            }
+            if (options?.priority !== undefined) {
+                taskData.priority = options.priority;
+            }
+            if (options?.sectionId) {
+                taskData.sectionId = options.sectionId;
+            }
+
+            const task = await client.addTask(taskData);
             return task;
         } catch (error) {
             console.error(`Error adding task "${content}" to Todoist:`, error);
+            console.error('Task data:', { content, options });
             throw error;
         }
     };
