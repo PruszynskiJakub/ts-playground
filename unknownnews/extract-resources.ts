@@ -76,22 +76,30 @@ async function extractResources() {
         console.log(`Found ${extractedResources.result.length} relevant resources`);
 
         // Step 4: Add resources as Todoist tasks
-        const projectId = '2345454316';
+        const projectId = '6Ww97pv5jvPXw6xP';
         const sectionIds = {
-            video: '186802021',
-            article: '186802025',
-            repository: '191483220'
+            video: '6Xc5X2wCfQqr66Vw',
+            article: '6Xc5X3H42r3j8fxw',
+            repository: '6c23Jmc6hmRfQj8w'
         };
 
-        const tasks = extractedResources.result.map(resource => ({
-            content: `${resource.title} - ${resource.url}`,
-            options: {
-                projectId,
-                description: resource.description,
-                priority: 2,
-                sectionId: sectionIds[resource.category]
-            }
-        }));
+        const tasks = extractedResources.result.map(resource => {
+            // Truncate title if too long (Todoist has a limit)
+            const maxTitleLength = 100;
+            const truncatedTitle = resource.title.length > maxTitleLength 
+                ? resource.title.substring(0, maxTitleLength) + "..."
+                : resource.title;
+            
+            return {
+                content: truncatedTitle,
+                options: {
+                    projectId,
+                    description: `${resource.description}\n\nURL: ${resource.url}`,
+                    priority: 2,
+                    sectionId: sectionIds[resource.category]
+                }
+            };
+        });
 
         console.log(tasks)
 

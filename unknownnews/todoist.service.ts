@@ -1,5 +1,5 @@
-import { TodoistApi } from '@doist/todoist-api-typescript';
-import type { Task } from '@doist/todoist-api-typescript';
+import type {Task} from '@doist/todoist-api-typescript';
+import {type AddTaskArgs, TodoistApi} from '@doist/todoist-api-typescript';
 
 // Factory function that takes a TodoistApi client and returns pure functions
 export const createTodoistService = (client: TodoistApi) => {
@@ -11,7 +11,7 @@ export const createTodoistService = (client: TodoistApi) => {
     ): Promise<Task> => {
         try {
             // Build task object, only including defined properties
-            const taskData: any = {
+            const taskData: AddTaskArgs = {
                 content,
             };
 
@@ -28,8 +28,7 @@ export const createTodoistService = (client: TodoistApi) => {
                 taskData.sectionId = options.sectionId;
             }
 
-            const task = await client.addTask(taskData);
-            return task;
+            return await client.addTask(taskData);
         } catch (error) {
             console.error(`Error adding task "${content}" to Todoist:`, error);
             console.error('Task data:', { content, options });
