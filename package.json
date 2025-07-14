@@ -23,7 +23,8 @@
     "promptfoo_blackbox": "bun run promptfoo_blackbox/app.ts",
     "youtube": "bun run youtube/main.ts",
     "langchain_with_data": "bun run langchain_with_data/main.ts",
-    "unknownnews": "bun run unknownnews/main.ts"
+    "unknownnews": "bun run unknownnews/main.ts",
+    "todoist": "bun run todoist/main.ts"
   },
   "dependencies": {
     "@chroma-core/default-embed": "^0.1.8",
