@@ -25,7 +25,8 @@
     "langchain_with_data": "bun run langchain_with_data/main.ts",
     "unknownnews": "bun run unknownnews/main.ts",
     "todoist": "bun run todoist/main.ts",
-    "mcp_client": "bun run mcp_client/main.ts"
+    "mcp_client": "bun run mcp_client/main.ts",
+    "document": "bun run document/main.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.56.0",
