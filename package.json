@@ -26,7 +26,8 @@
     "unknownnews": "bun run unknownnews/main.ts",
     "todoist": "bun run todoist/main.ts",
     "mcp_client": "bun run mcp_client/main.ts",
-    "document": "bun run document/main.ts"
+    "document": "bun run document/main.ts",
+    "mcp_host": "bun run mcp_host/main.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.56.0",
