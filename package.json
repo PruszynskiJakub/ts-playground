@@ -28,6 +28,7 @@
     "mcp_client": "bun run mcp_client/main.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.56.0",
     "@chroma-core/default-embed": "^0.1.8",
     "@doist/todoist-api-typescript": "^5.0.2",
     "@elevenlabs/elevenlabs-js": "^2.2.0",
@@ -36,6 +37,7 @@
     "@langchain/core": "^0.3.61",
     "@langchain/openai": "^0.5.13",
     "@microsoft/tiktokenizer": "^1.0.10",
+    "@modelcontextprotocol/sdk": "^1.15.1",
     "@openai/agents": "^0.0.6",
     "@qdrant/js-client-rest": "^1.14.1",
     "@types/uuid": "^10.0.0",
