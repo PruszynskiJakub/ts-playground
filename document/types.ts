@@ -9,7 +9,6 @@ export interface Document {
     conversation_uuid?: string;
     uuid?: string;
     duration?: number; // duration in seconds
-    headers?: Headers;
     urls?: string[];
     images?: string[];
     screenshots?: string[];
