@@ -1,7 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import type { Tool } from "@anthropic-ai/sdk/resources/messages/messages.mjs";
-import { MCPServerConfig, ServerConnection } from '../config/types.js';
+import type {MCPServerConfig, ServerConnection} from '../config/types.js';
 
 export class ServerRegistry {
   private connections: Map<string, ServerConnection> = new Map();
@@ -113,8 +113,10 @@ export class ServerRegistry {
     
     for (const connection of this.getConnectedServers()) {
       for (const tool of connection.tools) {
+        // Sanitize server name for tool naming (replace spaces and special chars with underscores)
+        const sanitizedServerName = connection.name.replace(/[^a-zA-Z0-9_-]/g, '_');
         allTools.push({
-          name: `${connection.name}:${tool.name}`,
+          name: `${sanitizedServerName}_${tool.name}`,
           description: `[${connection.name}] ${tool.description}`,
           input_schema: tool.input_schema,
         });
@@ -130,23 +132,34 @@ export class ServerRegistry {
       return [];
     }
     
+    const sanitizedServerName = serverName.replace(/[^a-zA-Z0-9_-]/g, '_');
     return connection.tools.map(tool => ({
-      name: `${serverName}:${tool.name}`,
+      name: `${sanitizedServerName}_${tool.name}`,
       description: `[${serverName}] ${tool.description}`,
       input_schema: tool.input_schema,
     }));
   }
 
   public findServerForTool(toolName: string): string | undefined {
-    // Handle prefixed tool names (serverName:toolName)
-    if (toolName.includes(':')) {
-      const [serverName] = toolName.split(':');
-      return serverName;
+    // Handle prefixed tool names (sanitizedServerName_toolName)
+    if (toolName.includes('_')) {
+      const parts = toolName.split('_');
+      if (parts.length >= 2) {
+        const possibleServerName = parts[0];
+        // Find the actual server name by matching the sanitized name
+        for (const connection of this.getConnectedServers()) {
+          const sanitizedServerName = connection.name.replace(/[^a-zA-Z0-9_-]/g, '_');
+          if (sanitizedServerName === possibleServerName) {
+            return connection.name;
+          }
+        }
+      }
     }
 
-    // Search for tool across all servers
+    // Search for tool across all servers by original tool name
+    const actualToolName = toolName.includes('_') ? toolName.split('_').slice(1).join('_') : toolName;
     for (const connection of this.getConnectedServers()) {
-      if (connection.tools.some(tool => tool.name === toolName)) {
+      if (connection.tools.some(tool => tool.name === actualToolName)) {
         return connection.name;
       }
     }
@@ -227,8 +240,29 @@ export class ServerRegistry {
     let serverName: string;
     let actualToolName: string;
 
-    if (toolName.includes(':')) {
-      [serverName, actualToolName] = toolName.split(':', 2);
+    if (toolName.includes('_')) {
+      const parts = toolName.split('_');
+      if (parts.length >= 2) {
+        const possibleServerName = parts[0];
+        // Find the actual server name by matching the sanitized name
+        let foundServer: string | undefined;
+        for (const connection of this.getConnectedServers()) {
+          const sanitizedServerName = connection.name.replace(/[^a-zA-Z0-9_-]/g, '_');
+          if (sanitizedServerName === possibleServerName) {
+            foundServer = connection.name;
+            break;
+          }
+        }
+        
+        if (foundServer) {
+          serverName = foundServer;
+          actualToolName = parts.slice(1).join('_');
+        } else {
+          throw new Error(`Server with sanitized name '${possibleServerName}' not found`);
+        }
+      } else {
+        throw new Error(`Invalid tool name format: ${toolName}`);
+      }
     } else {
       const foundServer = this.findServerForTool(toolName);
       if (!foundServer) {
