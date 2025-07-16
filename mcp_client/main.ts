@@ -1,7 +1,7 @@
-import { MCPClient } from './core/mcp-client.js';
-import { ChatInterface } from './interfaces/chat-interface.js';
-import type {QueryProcessor} from './interfaces/query-processor.js';
-import type {QueryResult} from './config/types.js';
+import { MCPClient } from './src/core/mcp-client.js';
+import { ChatInterface } from './src/interfaces/chat-interface.js';
+import type {QueryProcessor} from './src/interfaces/query-processor.js';
+import type {QueryResult} from './src/config/types.js';
 import dotenv from "dotenv";
 
 dotenv.config();

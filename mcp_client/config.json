@@ -1,17 +1,5 @@
 {
   "mcpServers": {
-    "YouTube Transcript": {
-      "command": "/opt/homebrew/bin/uv",
-      "args": [
-        "run",
-        "--with",
-        "mcp[cli]",
-        "mcp",
-        "run",
-        "/Users/jakubpruszynski/mcp-servers/yt-transcript/main.py"
-      ],
-      "description": "Fetches transcripts from YouTube videos"
-    },
     "Ollama": {
       "command": "/opt/homebrew/bin/uv",
       "args": [

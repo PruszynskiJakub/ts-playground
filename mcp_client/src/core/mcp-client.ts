@@ -6,7 +6,7 @@ import type {
 
 import { ConfigLoader } from '../config/loader.js';
 import { ServerRegistry } from './server-registry.js';
-import { MCPServersConfig, QueryResult } from '../config/types.js';
+import type {MCPServersConfig, QueryResult} from '../config/types.js';
 
 export class MCPClient {
   private anthropic: Anthropic;

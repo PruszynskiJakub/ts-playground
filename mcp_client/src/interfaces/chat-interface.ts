@@ -1,6 +1,6 @@
 import readline from "readline/promises";
-import { QueryProcessor } from './query-processor.js';
-import { QueryResult } from '../config/types.js';
+import type {QueryProcessor} from './query-processor.js';
+import type {QueryResult} from '../config/types.js';
 
 export class ChatInterface {
   private processor: QueryProcessor;

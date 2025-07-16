@@ -183,7 +183,7 @@ class MCPClient {
   }
 }
 
-async function main() {
+async function main_v1() {
   if (process.argv.length < 3) {
     console.log("Usage: node build/index.js <path_to_server_script>");
     return;
@@ -198,4 +198,4 @@ async function main() {
   }
 }
 
-main();
+main_v1();
