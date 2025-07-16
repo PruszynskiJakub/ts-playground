@@ -1,6 +1,6 @@
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
-import { MCPServersConfig, MCPServerConfig } from './types.js';
+import type {MCPServersConfig, MCPServerConfig} from './types.js';
 
 export class ConfigLoader {
   private static instance: ConfigLoader;
@@ -17,7 +17,23 @@ export class ConfigLoader {
 
   public loadConfig(configPath: string = 'config.json'): MCPServersConfig {
     try {
-      const fullPath = resolve(configPath);
+      let fullPath: string;
+      
+      if (configPath.startsWith('/')) {
+        // Absolute path
+        fullPath = configPath;
+      } else {
+        // Relative path - try multiple locations
+        const possiblePaths = [
+          resolve(configPath),                           // Current directory
+          resolve('mcp_client', configPath),             // mcp_client subdirectory
+          resolve(__dirname, '..', '..', configPath),    // Relative to src directory
+        ];
+        
+        // Find the first path that exists
+        fullPath = possiblePaths.find(path => existsSync(path)) || possiblePaths[0];
+      }
+      
       const configData = readFileSync(fullPath, 'utf8');
       const parsed = JSON.parse(configData) as MCPServersConfig;
       
