@@ -28,7 +28,9 @@
     "mcp_client": "bun run mcp_client/main.ts",
     "document": "bun run document/main.ts",
     "mcp_host": "bun run mcp_host/main.ts",
-    "feedly": "bun run feedly/main.ts"
+    "feedly": "bun run feedly/main.ts",
+    "memory": "bun run memory/main.ts",
+    "files": "bun run files/main.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.56.0",
