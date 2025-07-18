@@ -4,8 +4,8 @@ import {randomUUID} from "crypto";
 
 export const createTextService = (openaiService: ReturnType<typeof createOpenAIService>) => {
     
-    const split = async (document: Document): Promise<Document[]> => {
-        const maxChunkSize = 1000;
+    const split = async (document: Document, chunkSize?: number): Promise<Document[]> => {
+        const maxChunkSize = chunkSize || 1000;
         const text = document.text;
         
         if (text.length <= maxChunkSize) {

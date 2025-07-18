@@ -8,6 +8,7 @@ import type { Document } from './types';
 import { createTextService } from './text.service';
 import { createOpenAIService } from './openai.service';
 import { createFileService } from './file.service';
+import { createWebService } from './web.service';
 
 const app = new Hono();
 const openaiClient = new OpenAI({
@@ -15,7 +16,8 @@ const openaiClient = new OpenAI({
 });
 const openaiService = createOpenAIService(openaiClient);
 const textService = createTextService(openaiService);
-const fileService = createFileService();
+const webService = createWebService({ SERPER_API_KEY: process.env.SERPER_API_KEY || '' });
+const fileService = createFileService(textService, webService);
 
 // In-memory storage for processed documents
 const documentStore = new Map<string, Document[]>();
@@ -188,9 +190,9 @@ app.post('/chat', async (c) => {
 
     // Get all document chunks
     const allChunks: Document[] = [];
-    for (const chunks of documentStore.values()) {
+    documentStore.forEach((chunks) => {
       allChunks.push(...chunks);
-    }
+    });
 
     log('INFO', 'Retrieved document chunks', { requestId, totalChunks: allChunks.length });
 
@@ -289,51 +291,23 @@ app.post('/upload', async (c) => {
     const savedFile = await fileService.save(buffer, fileName, fileUUID, 'text', publicDir);
     log('INFO', 'File saved via file service', { requestId, fileName, savedFile });
 
-    let processedDocuments: Document[] = [];
+    // Process file using file service
+    log('INFO', 'Processing file with file service', { requestId, fileName });
+    const processResult = await fileService.process(savedFile.path);
+    const processedDocuments = processResult.docs;
     
-    // Process markdown files
-    if (fileName.toLowerCase().endsWith('.md') || fileName.toLowerCase().endsWith('.markdown')) {
-      log('INFO', 'Processing markdown file', { requestId, fileName });
-      
-      const fileContent = buffer.toString('utf-8');
-      
-      // Create Document instance
-      const document: Document = {
-        text: fileContent,
-        metadata: {
-          uuid: uuidv4(),
-          name: fileName,
-          source: savedFile.path,
-          chunk: 0,
-          total_chunks: 1
-        }
-      };
-      
-      log('INFO', 'Created document instance', { requestId, documentId: document.metadata.uuid });
-
-      // Extract images and URLs
-      const extractedDoc = textService.extractImagesAndUrls(document);
-      log('INFO', 'Extracted images and URLs', { 
+    if (processedDocuments.length > 0) {
+      log('INFO', 'File processed successfully', { 
         requestId, 
-        images: extractedDoc.metadata.images?.length || 0,
-        urls: extractedDoc.metadata.urls?.length || 0
+        chunksCreated: processedDocuments.length,
+        chunkIds: processedDocuments.map(c => c.metadata.uuid)
       });
       
-      // Split into chunks
-      log('INFO', 'Starting document splitting and description generation', { requestId });
-      const chunks = await textService.split(extractedDoc);
-      log('INFO', 'Document splitting completed', { 
-        requestId, 
-        chunksCreated: chunks.length,
-        chunkIds: chunks.map(c => c.metadata.uuid)
-      });
-      
-      // Store in memory
-      documentStore.set(document.metadata.uuid, chunks);
-      processedDocuments = chunks;
+      // Store in memory (use file UUID as key)
+      documentStore.set(fileUUID, processedDocuments);
       log('INFO', 'Document chunks stored in memory', { requestId });
     } else {
-      log('INFO', 'Non-markdown file uploaded, skipping processing', { requestId, fileName });
+      log('INFO', 'File uploaded but not processed (unsupported type)', { requestId, fileName });
     }
 
     const processingTime = Date.now() - startTime;

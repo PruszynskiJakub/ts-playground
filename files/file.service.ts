@@ -1,6 +1,10 @@
-import { mkdir, writeFile } from 'fs/promises';
+import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join, extname, basename } from 'path';
 import * as mime from 'mime-types';
+import { v4 as uuidv4 } from 'uuid';
+import type { Document } from './types';
+import type { createTextService } from './text.service';
+import type { createWebService } from './web.service';
 
 interface FileResult {
   type: "audio" | "text" | "image" | "document";
@@ -35,7 +39,16 @@ const mimeTypes: Record<string, MimeTypeConfig> = {
   }
 };
 
-export const createFileService = () => {
+export const createFileService = (textService?: ReturnType<typeof createTextService>, webService?: ReturnType<typeof createWebService>) => {
+  const isUrl = (input: string): boolean => {
+    try {
+      const url = new URL(input);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
   const getMimeTypeFromBuffer = async (fileContent: Buffer, fileName: string): Promise<string> => {
     const detectedMime = mime.lookup(fileName);
     if (detectedMime) {
@@ -117,7 +130,77 @@ export const createFileService = () => {
     }
   };
 
+  const process = async (filePathOrUrl: string, chunkSize?: number): Promise<{ docs: Document[] }> => {
+    if (!textService) {
+      throw new Error('Text service is required for processing files');
+    }
+
+    try {
+      // Check if input is a URL
+      if (isUrl(filePathOrUrl)) {
+        // Handle URL scraping
+        if (!webService) {
+          throw new Error('Web service is required for processing URLs');
+        }
+        
+        const scrapedDocs = await webService.scrapeWebpage([filePathOrUrl]);
+        
+        // Process each scraped document
+        const allChunks: Document[] = [];
+        for (const doc of scrapedDocs) {
+          // Extract images and URLs from scraped content (treat as markdown/text)
+          const extractedDoc = textService.extractImagesAndUrls(doc);
+          
+          // Split into chunks
+          const chunks = await textService.split(extractedDoc, chunkSize);
+          allChunks.push(...chunks);
+        }
+        
+        return { docs: allChunks };
+      }
+      
+      // Handle local file processing
+      const fileContent = await readFile(filePathOrUrl, 'utf-8');
+      const fileName = basename(filePathOrUrl);
+      
+      // Detect MIME type
+      const mimeType = await getMimeTypeFromBuffer(Buffer.from(fileContent), fileName);
+      
+      // Determine if file is processable
+      const isMarkdown = fileName.toLowerCase().endsWith('.md') || fileName.toLowerCase().endsWith('.markdown');
+      const isText = mimeTypes.text.mimes.includes(mimeType) || mimeTypes.text.extensions.includes(extname(fileName).slice(1).toLowerCase());
+      
+      if (!isMarkdown && !isText) {
+        return { docs: [] };
+      }
+
+      // Create Document instance
+      const document: Document = {
+        text: fileContent,
+        metadata: {
+          uuid: uuidv4(),
+          name: fileName,
+          source: filePathOrUrl,
+          chunk: 0,
+          total_chunks: 1
+        }
+      };
+
+      // Extract images and URLs for markdown files
+      const extractedDoc = isMarkdown ? textService.extractImagesAndUrls(document) : document;
+      
+      // Split into chunks
+      const chunks = await textService.split(extractedDoc, chunkSize);
+      
+      return { docs: chunks };
+    } catch (error) {
+      console.error('Error processing file or URL:', error);
+      throw error;
+    }
+  };
+
   return {
-    save
+    save,
+    process
   };
 };
