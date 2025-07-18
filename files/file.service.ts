@@ -85,7 +85,7 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
   };
 
   const saveTempFile = async (fileContent: Buffer, fileName: string, fileUUID: string): Promise<string> => {
-  const tempDir = join(process.cwd(), 'public', 'temp');
+    const tempDir = join(process.cwd(), 'files', 'public', 'temp');
     await mkdir(tempDir, { recursive: true });
     
     const tempFilePath = join(tempDir, `${fileUUID}_${fileName}`);
@@ -111,7 +111,7 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
         .padStart(2, "0")}`;
       const dirPath = join(
         process.cwd(),
-        `public/storage/${type}/${datePath}/${fileUUID}`
+        `files/public/storage/${type}/${datePath}/${fileUUID}`
       );
       await mkdir(dirPath, { recursive: true });
 

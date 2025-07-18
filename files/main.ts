@@ -278,7 +278,7 @@ app.post('/upload', async (c) => {
     log('INFO', 'Processing file upload', { requestId, fileName, fileSize });
 
     // Ensure public directory exists
-    const publicDir = join(process.cwd(), 'public');
+    const publicDir = join(process.cwd(), 'files', 'public');
     if (!existsSync(publicDir)) {
       await mkdir(publicDir, { recursive: true });
       log('INFO', 'Created public directory', { requestId, publicDir });
