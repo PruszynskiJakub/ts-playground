@@ -260,6 +260,7 @@ app.post('/chat', async (c) => {
 app.post('/upload', async (c) => {
   const startTime = Date.now();
   const requestId = `upload-${Date.now()}`;
+  let tempPath: string | null = null;
   
   try {
     log('INFO', 'Upload request received', { requestId });
@@ -277,24 +278,22 @@ app.post('/upload', async (c) => {
     log('INFO', 'Processing file upload', { requestId, fileName, fileSize });
 
     // Ensure public directory exists
-    const publicDir = join(process.cwd(), 'files', 'public');
+    const publicDir = join(process.cwd(), 'public');
     if (!existsSync(publicDir)) {
       await mkdir(publicDir, { recursive: true });
       log('INFO', 'Created public directory', { requestId, publicDir });
     }
 
-    // Save file using file service
+    // Process file using refactored file service
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     
-    const fileUUID = uuidv4();
-    const savedFile = await fileService.save(buffer, fileName, fileUUID, 'text', publicDir);
-    log('INFO', 'File saved via file service', { requestId, fileName, savedFile });
-
-    // Process file using file service
     log('INFO', 'Processing file with file service', { requestId, fileName });
-    const processResult = await fileService.process(savedFile.path);
-    const processedDocuments = processResult.docs;
+    const { docs: processedDocuments, tempPath: fileTempPath } = await fileService.uploadAndProcess(buffer, fileName);
+    tempPath = fileTempPath;
+    
+    // Generate unique ID for document storage
+    const documentId = uuidv4();
     
     if (processedDocuments.length > 0) {
       log('INFO', 'File processed successfully', { 
@@ -303,12 +302,16 @@ app.post('/upload', async (c) => {
         chunkIds: processedDocuments.map(c => c.metadata.uuid)
       });
       
-      // Store in memory (use file UUID as key)
-      documentStore.set(fileUUID, processedDocuments);
+      // Store in memory (use document ID as key)
+      documentStore.set(documentId, processedDocuments);
       log('INFO', 'Document chunks stored in memory', { requestId });
     } else {
       log('INFO', 'File uploaded but not processed (unsupported type)', { requestId, fileName });
     }
+
+    // Clean up temp file
+    await fileService.unlinkTempFile(tempPath);
+    log('INFO', 'Temp file cleaned up', { requestId, tempPath });
 
     const processingTime = Date.now() - startTime;
     log('INFO', 'Upload request completed successfully', { 
@@ -322,11 +325,11 @@ app.post('/upload', async (c) => {
     return c.json({ 
       message: 'File uploaded successfully',
       fileName: fileName,
-      filePath: `/files/public/${fileName}`,
+      documentId: documentId,
       ...(processedDocuments.length > 0 && {
         processed: true,
         documentsCreated: processedDocuments.length,
-        documentId: processedDocuments[0].metadata.uuid
+        firstDocumentId: processedDocuments[0].metadata.uuid
       })
     });
   } catch (error) {
@@ -336,6 +339,12 @@ app.post('/upload', async (c) => {
       error: error instanceof Error ? error.message : 'Unknown error',
       processingTime: `${processingTime}ms`
     });
+    
+    // Clean up temp file if it exists
+    if (tempPath) {
+      await fileService.unlinkTempFile(tempPath).catch(() => {});
+    }
+    
     return c.json({ error: 'Failed to upload file' }, 500);
   }
 });

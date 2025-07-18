@@ -1,4 +1,4 @@
-import { mkdir, writeFile, readFile } from 'fs/promises';
+import { mkdir, writeFile, readFile, unlink } from 'fs/promises';
 import { join, extname, basename } from 'path';
 import * as mime from 'mime-types';
 import { v4 as uuidv4 } from 'uuid';
@@ -39,6 +39,15 @@ const mimeTypes: Record<string, MimeTypeConfig> = {
   }
 };
 
+const getFileCategoryFromMimeType = (mimeType: string): "text" | "audio" | "image" | "document" => {
+  for (const [category, typeInfo] of Object.entries(mimeTypes)) {
+    if (typeInfo.mimes.includes(mimeType)) {
+      return category as "text" | "audio" | "image" | "document";
+    }
+  }
+  return "document";
+};
+
 export const createFileService = (textService?: ReturnType<typeof createTextService>, webService?: ReturnType<typeof createWebService>) => {
   const isUrl = (input: string): boolean => {
     try {
@@ -75,6 +84,16 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
     return defaultExtensions[type];
   };
 
+  const saveTempFile = async (fileContent: Buffer, fileName: string, fileUUID: string): Promise<string> => {
+    const tempDir = join(process.cwd(), 'public', 'temp');
+    await mkdir(tempDir, { recursive: true });
+    
+    const tempFilePath = join(tempDir, `${fileUUID}_${fileName}`);
+    await writeFile(tempFilePath, fileContent);
+    
+    return tempFilePath;
+  };
+
   const save = async (
     fileContent: Buffer,
     fileName: string,
@@ -91,8 +110,8 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
         .toString()
         .padStart(2, "0")}`;
       const dirPath = join(
-        __dirname,
-        `storage/${type}/${datePath}/${fileUUID}`
+        process.cwd(),
+        `public/storage/${type}/${datePath}/${fileUUID}`
       );
       await mkdir(dirPath, { recursive: true });
 
@@ -199,8 +218,77 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
     }
   };
 
+  const processContent = async (filePath: string, type: "text" | "audio" | "image" | "document", chunkSize?: number): Promise<Document[]> => {
+    if (!textService) {
+      throw new Error('Text service is required for processing content');
+    }
+
+    try {
+      switch (type) {
+        case 'text': {
+          const fileContent = await readFile(filePath, 'utf-8');
+          const fileName = basename(filePath);
+          
+          const document: Document = {
+            text: fileContent,
+            metadata: {
+              uuid: uuidv4(),
+              name: fileName,
+              source: filePath,
+              chunk: 0,
+              total_chunks: 1
+            }
+          };
+
+          const isMarkdown = fileName.toLowerCase().endsWith('.md') || fileName.toLowerCase().endsWith('.markdown');
+          const extractedDoc = isMarkdown ? textService.extractImagesAndUrls(document) : document;
+          
+          return await textService.split(extractedDoc, chunkSize);
+        }
+        case 'audio':
+        case 'image':
+        case 'document':
+        default:
+          return [];
+      }
+    } catch (error) {
+      console.error('Error processing content:', error);
+      throw error;
+    }
+  };
+
+  const uploadAndProcess = async (fileContent: Buffer, fileName: string, chunkSize?: number): Promise<{ docs: Document[], tempPath: string }> => {
+    const fileUUID = uuidv4();
+    const mimeType = await getMimeTypeFromBuffer(fileContent, fileName);
+    const fileType = getFileCategoryFromMimeType(mimeType);
+    
+    const tempPath = await saveTempFile(fileContent, fileName, fileUUID);
+    
+    try {
+      await save(fileContent, fileName, fileUUID, fileType);
+      const docs = await processContent(tempPath, fileType, chunkSize);
+      
+      return { docs, tempPath };
+    } catch (error) {
+      await unlink(tempPath).catch(() => {});
+      throw error;
+    }
+  };
+
+  const unlinkTempFile = async (tempPath: string): Promise<void> => {
+    try {
+      await unlink(tempPath);
+    } catch (error) {
+      console.error('Failed to unlink temp file:', error);
+    }
+  };
+
   return {
     save,
-    process
+    process,
+    processContent,
+    uploadAndProcess,
+    unlinkTempFile,
+    getFileCategoryFromMimeType
   };
 };
