@@ -289,7 +289,7 @@ app.post('/upload', async (c) => {
     const buffer = Buffer.from(arrayBuffer);
     
     log('INFO', 'Processing file with file service', { requestId, fileName });
-    const { docs: processedDocuments, tempPath: fileTempPath } = await fileService.uploadAndProcess(buffer, fileName);
+    const { docs: processedDocuments, tempPath: fileTempPath, savedFile } = await fileService.uploadAndProcess(buffer, fileName);
     tempPath = fileTempPath;
     
     // Generate unique ID for document storage
@@ -317,6 +317,8 @@ app.post('/upload', async (c) => {
     log('INFO', 'Upload request completed successfully', { 
       requestId, 
       fileName,
+      savedPath: savedFile.path,
+      fileUUID: savedFile.fileUUID,
       processed: processedDocuments.length > 0,
       chunksCreated: processedDocuments.length,
       processingTime: `${processingTime}ms`
@@ -326,6 +328,13 @@ app.post('/upload', async (c) => {
       message: 'File uploaded successfully',
       fileName: fileName,
       documentId: documentId,
+      savedFile: {
+        path: savedFile.path,
+        fileName: savedFile.fileName,
+        fileUUID: savedFile.fileUUID,
+        type: savedFile.type,
+        mimeType: savedFile.mimeType
+      },
       ...(processedDocuments.length > 0 && {
         processed: true,
         documentsCreated: processedDocuments.length,

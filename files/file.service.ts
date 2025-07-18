@@ -85,7 +85,7 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
   };
 
   const saveTempFile = async (fileContent: Buffer, fileName: string, fileUUID: string): Promise<string> => {
-    const tempDir = join(process.cwd(), 'public', 'temp');
+  const tempDir = join(process.cwd(), 'public', 'temp');
     await mkdir(tempDir, { recursive: true });
     
     const tempFilePath = join(tempDir, `${fileUUID}_${fileName}`);
@@ -218,7 +218,7 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
     }
   };
 
-  const uploadAndProcess = async (fileContent: Buffer, fileName: string, chunkSize?: number): Promise<{ docs: Document[], tempPath: string }> => {
+  const uploadAndProcess = async (fileContent: Buffer, fileName: string, chunkSize?: number): Promise<{ docs: Document[], tempPath: string, savedFile: FileResult }> => {
     const fileUUID = uuidv4();
     const mimeType = await getMimeTypeFromBuffer(fileContent, fileName);
     const fileType = getFileCategoryFromMimeType(mimeType);
@@ -226,10 +226,10 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
     const tempPath = await saveTempFile(fileContent, fileName, fileUUID);
     
     try {
-      await save(fileContent, fileName, fileUUID, fileType);
+      const savedFile = await save(fileContent, fileName, fileUUID, fileType);
       const { docs } = await processFile(tempPath, chunkSize);
       
-      return { docs, tempPath };
+      return { docs, tempPath, savedFile };
     } catch (error) {
       await unlink(tempPath).catch(() => {});
       throw error;
