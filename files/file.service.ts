@@ -149,7 +149,7 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
     }
   };
 
-  const process = async (filePathOrUrl: string, chunkSize?: number): Promise<{ docs: Document[] }> => {
+  const processFile = async (filePathOrUrl: string, chunkSize?: number): Promise<{ docs: Document[] }> => {
     if (!textService) {
       throw new Error('Text service is required for processing files');
     }
@@ -227,7 +227,7 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
     
     try {
       await save(fileContent, fileName, fileUUID, fileType);
-      const { docs } = await process(tempPath, chunkSize);
+      const { docs } = await processFile(tempPath, chunkSize);
       
       return { docs, tempPath };
     } catch (error) {
@@ -246,7 +246,7 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
 
   return {
     save,
-    process,
+    process: processFile,
     uploadAndProcess,
     unlinkTempFile,
     getFileCategoryFromMimeType
