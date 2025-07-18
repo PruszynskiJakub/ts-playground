@@ -218,45 +218,6 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
     }
   };
 
-  const processContent = async (filePath: string, type: "text" | "audio" | "image" | "document", chunkSize?: number): Promise<Document[]> => {
-    if (!textService) {
-      throw new Error('Text service is required for processing content');
-    }
-
-    try {
-      switch (type) {
-        case 'text': {
-          const fileContent = await readFile(filePath, 'utf-8');
-          const fileName = basename(filePath);
-          
-          const document: Document = {
-            text: fileContent,
-            metadata: {
-              uuid: uuidv4(),
-              name: fileName,
-              source: filePath,
-              chunk: 0,
-              total_chunks: 1
-            }
-          };
-
-          const isMarkdown = fileName.toLowerCase().endsWith('.md') || fileName.toLowerCase().endsWith('.markdown');
-          const extractedDoc = isMarkdown ? textService.extractImagesAndUrls(document) : document;
-          
-          return await textService.split(extractedDoc, chunkSize);
-        }
-        case 'audio':
-        case 'image':
-        case 'document':
-        default:
-          return [];
-      }
-    } catch (error) {
-      console.error('Error processing content:', error);
-      throw error;
-    }
-  };
-
   const uploadAndProcess = async (fileContent: Buffer, fileName: string, chunkSize?: number): Promise<{ docs: Document[], tempPath: string }> => {
     const fileUUID = uuidv4();
     const mimeType = await getMimeTypeFromBuffer(fileContent, fileName);
@@ -266,7 +227,7 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
     
     try {
       await save(fileContent, fileName, fileUUID, fileType);
-      const docs = await processContent(tempPath, fileType, chunkSize);
+      const { docs } = await process(tempPath, chunkSize);
       
       return { docs, tempPath };
     } catch (error) {
@@ -286,7 +247,6 @@ export const createFileService = (textService?: ReturnType<typeof createTextServ
   return {
     save,
     process,
-    processContent,
     uploadAndProcess,
     unlinkTempFile,
     getFileCategoryFromMimeType
