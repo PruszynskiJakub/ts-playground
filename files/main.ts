@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { writeFile, mkdir } from 'fs/promises';
+import { mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -7,6 +7,7 @@ import OpenAI from 'openai';
 import type { Document } from './types';
 import { createTextService } from './text.service';
 import { createOpenAIService } from './openai.service';
+import { createFileService } from './file.service';
 
 const app = new Hono();
 const openaiClient = new OpenAI({
@@ -14,6 +15,7 @@ const openaiClient = new OpenAI({
 });
 const openaiService = createOpenAIService(openaiClient);
 const textService = createTextService(openaiService);
+const fileService = createFileService();
 
 // In-memory storage for processed documents
 const documentStore = new Map<string, Document[]>();
@@ -279,13 +281,13 @@ app.post('/upload', async (c) => {
       log('INFO', 'Created public directory', { requestId, publicDir });
     }
 
-    // Save file
-    const filePath = join(publicDir, fileName);
+    // Save file using file service
     const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-
-    await writeFile(filePath, buffer);
-    log('INFO', 'File saved to disk', { requestId, fileName, filePath });
+    const buffer = Buffer.from(arrayBuffer);
+    
+    const fileUUID = uuidv4();
+    const savedFile = await fileService.save(buffer, fileName, fileUUID, 'text', publicDir);
+    log('INFO', 'File saved via file service', { requestId, fileName, savedFile });
 
     let processedDocuments: Document[] = [];
     
@@ -301,7 +303,7 @@ app.post('/upload', async (c) => {
         metadata: {
           uuid: uuidv4(),
           name: fileName,
-          source: filePath,
+          source: savedFile.path,
           chunk: 0,
           total_chunks: 1
         }
