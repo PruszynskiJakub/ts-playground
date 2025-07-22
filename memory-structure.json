@@ -1,0 +1,106 @@
+{
+  "memory_structure": {
+    "personal": {
+      "description": "Personal life experiences, relationships, and individual milestones",
+      "subcategories": {
+        "relationships": {
+          "description": "Family, friends, romantic relationships, and social connections"
+        },
+        "achievements": {
+          "description": "Personal accomplishments, milestones, and proud moments"
+        },
+        "experiences": {
+          "description": "Travel, adventures, significant life events, and memorable moments"
+        },
+        "health": {
+          "description": "Medical history, fitness journeys, mental health experiences"
+        }
+      }
+    },
+    "professional": {
+      "description": "Career, work experiences, skills development, and professional growth",
+      "subcategories": {
+        "career": {
+          "description": "Job positions, career changes, workplace experiences"
+        },
+        "skills": {
+          "description": "Technical abilities, certifications, training, and competencies learned"
+        },
+        "projects": {
+          "description": "Work projects, collaborations, and professional achievements"
+        },
+        "networking": {
+          "description": "Professional connections, mentors, and industry relationships"
+        }
+      }
+    },
+    "educational": {
+      "description": "Learning experiences, academic achievements, and knowledge acquisition",
+      "subcategories": {
+        "formal_education": {
+          "description": "Schools, universities, degrees, and formal academic experiences"
+        },
+        "self_learning": {
+          "description": "Books read, online courses, tutorials, and independent study"
+        },
+        "workshops": {
+          "description": "Seminars, conferences, workshops, and training sessions attended"
+        },
+        "teaching": {
+          "description": "Times when teaching or mentoring others, sharing knowledge"
+        }
+      }
+    },
+    "creative": {
+      "description": "Artistic pursuits, creative projects, and cultural experiences",
+      "subcategories": {
+        "hobbies": {
+          "description": "Creative hobbies, artistic pursuits, and recreational activities"
+        },
+        "cultural": {
+          "description": "Movies, books, music, art, and cultural experiences that impacted you"
+        },
+        "projects": {
+          "description": "Creative projects, artistic works, and personal creations"
+        },
+        "inspiration": {
+          "description": "Sources of inspiration, creative breakthroughs, and artistic influences"
+        }
+      }
+    },
+    "lifestyle": {
+      "description": "Daily habits, preferences, living situations, and life philosophy",
+      "subcategories": {
+        "habits": {
+          "description": "Daily routines, lifestyle choices, and behavioral patterns"
+        },
+        "locations": {
+          "description": "Places lived, visited, or significant geographical memories"
+        },
+        "preferences": {
+          "description": "Favorite things, dislikes, tastes, and personal preferences"
+        },
+        "philosophy": {
+          "description": "Life lessons learned, values, beliefs, and personal growth insights"
+        }
+      }
+    },
+    "social": {
+      "description": "Community involvement, social activities, and group experiences",
+      "subcategories": {
+        "community": {
+          "description": "Volunteer work, community service, and civic engagement"
+        },
+        "events": {
+          "description": "Parties, gatherings, celebrations, and social occasions"
+        },
+        "groups": {
+          "description": "Clubs, organizations, teams, and group memberships"
+        },
+        "traditions": {
+          "description": "Family traditions, cultural practices, and recurring social activities"
+        }
+      }
+    }
+  }
+}
