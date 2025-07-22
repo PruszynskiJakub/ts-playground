@@ -2,6 +2,7 @@ import {ChatOpenAI, OpenAIEmbeddings} from "@langchain/openai";
 import {QdrantVectorStore} from "@langchain/qdrant";
 import {readFileSync} from "fs";
 import {join} from "path";
+import { z } from "zod";
 
 console.log('Hello from langgraph v1!');
 
@@ -22,6 +23,18 @@ const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
     collectionName: "memories",
 });
 
+const memorySchema = z.object({
+  content: z.string().describe("Enhanced and rephrased memory content that is descriptive and searchable"),
+  category: z.string().describe("The main category from the memory structure (e.g., personal, professional, educational, creative, lifestyle, social)"),
+  subcategory: z.string().describe("The specific subcategory within the chosen category"),
+  metadata: z.object({
+    timestamp: z.string().describe("ISO timestamp when the memory was created"),
+    original_query: z.string().describe("The original user query/input")
+  })
+});
+
+type GeneratedMemory = z.infer<typeof memorySchema>;
+
 interface MemoryStructure {
   memory_structure: Record<string, {
     description: string;
@@ -31,22 +44,14 @@ interface MemoryStructure {
   }>;
 }
 
-interface GeneratedMemory {
-  content: string;
-  category: string;
-  subcategory: string;
-  metadata: {
-    timestamp: string;
-    original_query: string;
-  };
-}
-
 const memoryStructure: MemoryStructure = JSON.parse(
   readFileSync(join(__dirname, "memory-structure.json"), "utf-8")
 );
 
 async function generateMemory(userQuery: string): Promise<GeneratedMemory> {
   const structureContext = JSON.stringify(memoryStructure, null, 2);
+  
+  const structuredLlm = llm.withStructuredOutput(memorySchema);
   
   const prompt = `Based on the following memory structure and user query, generate a structured memory entry.
 
@@ -56,29 +61,18 @@ ${structureContext}
 User Query: "${userQuery}"
 
 Please:
-1. Analyze the query and determine the most appropriate category and subcategory
+1. Analyze the query and determine the most appropriate category and subcategory from the memory structure
 2. Rephrase/enhance the content to be more descriptive and searchable
-3. Return a JSON object with this structure:
-{
-  "content": "Enhanced/rephrased memory content",
-  "category": "selected_category",
-  "subcategory": "selected_subcategory",
-  "metadata": {
-    "timestamp": "current_iso_timestamp",
-    "original_query": "original_user_query"
-  }
-}
+3. Fill in all required fields including metadata`;
 
-Only return the JSON object, no additional text.`;
-
-  const response = await llm.invoke(prompt);
-  const generatedMemory = JSON.parse(response.content as string);
+  const generatedMemory = await structuredLlm.invoke(prompt);
   
   return {
     ...generatedMemory,
     metadata: {
       ...generatedMemory.metadata,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      original_query: userQuery
     }
   };
 }
