@@ -223,6 +223,53 @@ async function storeMemory(memory: GeneratedMemory): Promise<void> {
   console.log(`Memory stored: ${memory.name} (${memory.category}/${memory.subcategory})`);
 }
 
+async function populateSampleMemories(): Promise<void> {
+  const sampleQueries = [
+    "I met Sarah Chen at the React conference on July 15th. She's a senior frontend developer at Netflix and shared insights about performance optimization. Her email is sarah.chen@netflix.com",
+    "Had coffee with Mike Rodriguez yesterday. He's a product manager at Google working on AI tools. We discussed machine learning applications in consumer products. Contact: mike.r@google.com", 
+    "Just finished reading 'Clean Code' by Robert Martin. The book taught me about writing maintainable code, proper naming conventions, and the importance of small functions. Very helpful for improving my coding skills.",
+    "Completed the AWS Solutions Architect course last month. Learned about cloud architecture patterns, serverless computing, and cost optimization strategies. Got my certification on June 20th, 2024.",
+    "Started learning Spanish on Duolingo 3 months ago. I practice daily for 30 minutes and I'm currently on a 45-day streak. My goal is to reach conversational level by end of year.",
+    "Attended the AI Summit in San Francisco on July 10th. Key takeaways included GPT-4 applications, ethical AI considerations, and the future of autonomous systems. Lots of networking opportunities."
+  ];
+
+  console.log('Populating vector store with sample memories...');
+  
+  for (const query of sampleQueries) {
+    try {
+      const memory = await generateMemory(query);
+      await storeMemory(memory);
+      console.log(`✓ Stored: ${memory.name}`);
+    } catch (error) {
+      console.error(`Error storing sample memory: ${query}`, error);
+    }
+  }
+  
+  console.log('Sample memories population complete!');
+}
+
+async function searchMemories(searchQuery: string, maxResults: number = 5): Promise<any[]> {
+  try {
+    console.log(`\nSearching for: "${searchQuery}"`);
+    
+    const results = await vectorStore.similaritySearch(searchQuery, maxResults);
+    
+    console.log(`Found ${results.length} similar memories:`);
+    results.forEach((result, index) => {
+      console.log(`\n${index + 1}. ${result.metadata.name || 'Unnamed Memory'}`);
+      console.log(`   Category: ${result.metadata.category}/${result.metadata.subcategory}`);
+      console.log(`   Confidence: ${result.metadata.confidence}`);
+      console.log(`   Tags: ${result.metadata.tags?.join(', ') || 'None'}`);
+      console.log(`   Content Preview: ${result.metadata.content?.substring(0, 100)}...`);
+    });
+    
+    return results;
+  } catch (error) {
+    console.error('Error searching memories:', error);
+    return [];
+  }
+}
+
 async function processMemoryQuery(userQuery: string): Promise<void> {
   try {
     console.log(`Processing query: ${userQuery}`);
@@ -238,8 +285,40 @@ async function processMemoryQuery(userQuery: string): Promise<void> {
   }
 }
 
-const query = "I met John Smith at the networking event last night. He's a product manager at Microsoft and we discussed AI integration in enterprise software. He gave me his card - john.smith@microsoft.com";
+async function runDemo(): Promise<void> {
+  try {
+    // First populate with sample memories
+    await populateSampleMemories();
+    
+    // Add the main query
+    const query = "I met John Smith at the networking event last night. He's a product manager at Microsoft and we discussed AI integration in enterprise software. He gave me his card - john.smith@microsoft.com";
+    await processMemoryQuery(query);
+    
+    // Now demonstrate search functionality
+    console.log('\n' + '='.repeat(50));
+    console.log('DEMONSTRATING MEMORY SEARCH');
+    console.log('='.repeat(50));
+    
+    // Search for different types of queries
+    const searchQueries = [
+      "people working at Google",
+      "React and frontend development", 
+      "books about programming",
+      "AI and machine learning",
+      "conferences and events",
+      "learning new skills"
+    ];
+    
+    for (const searchQuery of searchQueries) {
+      await searchMemories(searchQuery, 3);
+      console.log('\n' + '-'.repeat(30));
+    }
+    
+    console.log('\nDemo complete!');
+    
+  } catch (error) {
+    console.error('Demo error:', error);
+  }
+}
 
-processMemoryQuery(query).then(() => {
-  console.log('Memory processing complete');
-}).catch(console.error);
+runDemo().catch(console.error);
