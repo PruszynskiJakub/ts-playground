@@ -59,10 +59,24 @@ async function generateMemory(userQuery: string): Promise<GeneratedMemory> {
   
   const structuredLlm = llm.withStructuredOutput(memorySchema);
   
+  const currentDateTime = new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  });
+
   const prompt = `You are a memory assistant creating structured memory entries from user input.
 
+<current_datetime>
+${currentDateTime}
+</current_datetime>
+
 <prompt_objective>
-Create a structured JSON memory object from user input, adhering to strict categorization and formatting rules.
+Create a structured JSON memory object from user input, adhering to strict categorization and formatting rules. Use the current datetime above to convert relative time references (like "yesterday", "last night", "today") into specific dates and times.
 </prompt_objective>
 
 <prompt_rules>
@@ -98,7 +112,7 @@ Response:
 {
   "name": "sarah-johnson",
   "content": {
-    "text": "# Sarah Johnson\\n\\nSenior developer at Google. Met at a tech conference yesterday and talked about React performance optimization.\\n\\n**Contact:** sarah.j@google.com"
+    "text": "# Sarah Johnson\\n\\nSenior developer at Google. Met at a tech conference on [specific date based on current datetime] and talked about React performance optimization.\\n\\n**Contact:** sarah.j@google.com"
   },
   "category": "professional",
   "subcategory": "networking",
